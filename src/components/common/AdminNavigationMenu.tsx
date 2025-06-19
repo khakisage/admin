@@ -9,7 +9,6 @@ import {
   Bell,
   Building2,
   Calendar,
-  CreditCard,
   History,
   Settings,
   UserPlus,
@@ -99,9 +98,9 @@ const memberItems = [
 
 const noticeItems = [
   {
-    title: "공지사항 등록",
-    href: "/admin/notices/create",
-    description: "새로운 공지사항을 등록합니다.",
+    title: "공지사항 관리",
+    href: "/admin/notices",
+    description: "공지사항 등록, 수정, 삭제를 할 수 있습니다.",
     icon: Bell,
   },
 ];
