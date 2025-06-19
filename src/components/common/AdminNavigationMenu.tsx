@@ -118,7 +118,7 @@ export const AdminNavigationMenu = () => {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-12">
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
