@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Coins,
@@ -13,6 +14,7 @@ import {
   Settings,
   UserPlus,
   Store,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -23,6 +25,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const approvalItems = [
   {
@@ -106,100 +110,120 @@ const noticeItems = [
 ];
 
 export const AdminNavigationMenu = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    toast.success("로그아웃되었습니다.");
+    router.push("/");
+  };
+
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>가입 승인</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-2 p-4">
-              {approvalItems.map((item) => (
-                <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  {item.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
+    <div className="flex items-center gap-4">
+      <NavigationMenu>
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>가입 승인</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-2 p-4">
+                {approvalItems.map((item) => (
+                  <ListItem
+                    key={item.title}
+                    title={item.title}
+                    href={item.href}
+                    icon={item.icon}
+                  >
+                    {item.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>포인트 관리</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[500px] gap-2 p-4 md:grid-cols-2">
-              {pointItems.map((item) => (
-                <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  {item.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>포인트 관리</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[500px] gap-2 p-4 md:grid-cols-2">
+                {pointItems.map((item) => (
+                  <ListItem
+                    key={item.title}
+                    title={item.title}
+                    href={item.href}
+                    icon={item.icon}
+                  >
+                    {item.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>출동/거래내역</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-2 p-4">
-              {dispatchItems.map((item) => (
-                <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  {item.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>출동/거래내역</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-2 p-4">
+                {dispatchItems.map((item) => (
+                  <ListItem
+                    key={item.title}
+                    title={item.title}
+                    href={item.href}
+                    icon={item.icon}
+                  >
+                    {item.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>회원 관리</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-2 p-4">
-              {memberItems.map((item) => (
-                <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  {item.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>회원 관리</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[400px] gap-2 p-4">
+                {memberItems.map((item) => (
+                  <ListItem
+                    key={item.title}
+                    title={item.title}
+                    href={item.href}
+                    icon={item.icon}
+                  >
+                    {item.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>공지사항</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[300px] gap-2 p-4">
-              {noticeItems.map((item) => (
-                <ListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  {item.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>공지사항</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[300px] gap-2 p-4">
+                {noticeItems.map((item) => (
+                  <ListItem
+                    key={item.title}
+                    title={item.title}
+                    href={item.href}
+                    icon={item.icon}
+                  >
+                    {item.description}
+                  </ListItem>
+                ))}
+              </ul>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
+
+      {/* 로그아웃 버튼 */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLogout}
+        className="flex items-center gap-2"
+      >
+        <LogOut className="h-4 w-4" />
+        로그아웃
+      </Button>
+    </div>
   );
 };
 
