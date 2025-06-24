@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
@@ -92,6 +93,7 @@ export default function FuneralHallsPage() {
   // if (error) return <ErrorMessage error={error} />
   const [data] = useState(dummyData);
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
 
   // 검색 로직
   const filteredData = data.filter((item) => {
@@ -151,33 +153,17 @@ export default function FuneralHallsPage() {
               filteredData.map((item) => (
                 <div
                   key={item.id}
-                  className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors"
+                  className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() =>
+                    router.push(`/admin/members/funeral-halls/${item.id}`)
+                  }
                 >
                   <div className="flex items-center space-x-8 flex-1">
-                    <div className="min-w-[120px]">
-                      <div className="font-semibold">{item.name}</div>
-                      <div className="text-xs text-gray-500">장례식장</div>
-                    </div>
-                    <div className="min-w-[150px] text-sm text-muted-foreground">
-                      {item.funeralHall}
-                    </div>
-                    <div className="min-w-[150px] text-sm text-muted-foreground">
-                      {item.phone}
+                    <div className="min-w-[120px] font-semibold">
+                      {item.name}
                     </div>
                     <div className="min-w-[200px] text-sm text-muted-foreground truncate">
                       {item.email}
-                    </div>
-                    <div className="min-w-[200px] text-sm text-muted-foreground truncate">
-                      {item.address}
-                    </div>
-                    <div className="min-w-[120px] text-sm text-muted-foreground">
-                      포인트: {item.currentPoints.toLocaleString()}원
-                    </div>
-                    <div className="min-w-[120px] text-sm text-muted-foreground">
-                      캐시: {item.currentCash.toLocaleString()}원
-                    </div>
-                    <div className="min-w-[100px] text-xs text-gray-500">
-                      {item.joinDate}
                     </div>
                     <div
                       className={`min-w-[80px] text-sm font-medium ${getStatusColor(
