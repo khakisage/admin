@@ -21,9 +21,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { adminAuthAPI } from "@/lib/api";
 
 export default function Login() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const formSchema = z.object({
     email: z
       .string()
@@ -48,15 +53,30 @@ export default function Login() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // TODO: 로그인 로직 구현
-    // - API 호출
-    // - 토큰 저장
-    // - 인증 상태 관리
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // setIsLoading(true);
+    // setError(null);
 
-    // 임시로 /admin으로 이동
-    router.push("/admin/approval/manager");
+    // try {
+    //   const response = await adminAuthAPI.login(values.email, values.password);
+
+    //   // 토큰 저장
+    //   localStorage.setItem("accessToken", response.accessToken);
+    //   localStorage.setItem("refreshToken", response.refreshToken);
+
+    //   // 관리자 정보 저장 (필요한 경우)
+    //   localStorage.setItem("adminInfo", JSON.stringify(response.admin));
+
+    //   // 로그인 성공 시 관리자 대시보드로 이동
+    router.push("/admin");
+    // } catch (error: unknown) {
+    //   console.error("로그인 실패:", error);
+    //   const errorMessage =
+    //     error instanceof Error ? error.message : "로그인에 실패했습니다.";
+    //   setError(errorMessage);
+    // } finally {
+    //   setIsLoading(false);
+    // }
   }
 
   return (
@@ -71,6 +91,11 @@ export default function Login() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -101,8 +126,8 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                로그인
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "로그인 중..." : "로그인"}
               </Button>
             </form>
           </Form>
