@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { userAPI } from "@/lib/api";
 
 interface CompanyMember {
   id: number;
@@ -87,21 +88,35 @@ const dummyData: CompanyMember[] = [
 ];
 
 export default function CompaniesPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useCompanyMembers()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data] = useState(dummyData);
+  const [data, setData] = useState<CompanyMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await userAPI.getManagerList();
+        console.log("🚀 ~ fetchData ~ result:", result)
+        setData(result.data.managers); // managers 배열을 설정
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // 검색 로직
-  const filteredData = data.filter((item) => {
+  const filteredData = data.filter((item: any) => {
     const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.phone.includes(searchTerm) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase());
+      item.managerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.managerBankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.managerPhoneNumber.includes(searchTerm) ||
+      item.managerUsername.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -126,6 +141,14 @@ export default function CompaniesPage() {
         return status;
     }
   };
+
+  if (isLoading) {
+    return <div className="text-center py-8 text-muted-foreground">로딩 중...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-600">에러: {error}</div>;
+  }
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
@@ -152,25 +175,25 @@ export default function CompaniesPage() {
             ) : (
               filteredData.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.managerId} // 올바른 키 사용
                   className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() =>
-                    router.push(`/admin/members/companies/${item.id}`)
+                    router.push(`/admin/members/companies/${item.managerId}`)
                   }
                 >
                   <div className="flex items-center space-x-8 flex-1">
                     <div className="min-w-[120px] font-semibold">
-                      {item.name}
+                      {item.managerName} {/* 올바른 필드 사용 */}
                     </div>
                     <div className="min-w-[200px] text-sm text-muted-foreground truncate">
-                      {item.email}
+                      {item.managerUsername} {/* 올바른 필드 사용 */}
                     </div>
                     <div
                       className={`min-w-[80px] text-sm font-medium ${getStatusColor(
-                        item.status
+                        item.isApproved ? "active" : "inactive" // 상태에 따라 색상 설정
                       )}`}
                     >
-                      {getStatusText(item.status)}
+                      {getStatusText(item.isApproved ? "active" : "inactive")}
                     </div>
                   </div>
                 </div>

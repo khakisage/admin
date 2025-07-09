@@ -13,7 +13,8 @@ import {
 import PointIssueDialog from "@/components/common/PointIssueDialog";
 import { toast } from "sonner";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { userAPI } from "@/lib/api";
 
 interface PointIssue {
   id: number;
@@ -25,67 +26,64 @@ interface PointIssue {
   lastIssueDate: string;
 }
 
-// TODO: API 도입 시 제거하고 useQuery로 대체
-// const { data, isLoading, error } = usePointIssues()
-const dummyData: PointIssue[] = [
-  {
-    id: 1,
-    memberName: "홍길동",
-    memberType: "manager",
-    company: "하늘상조",
-    currentPoints: 50000,
-    currentCash: 100000,
-    lastIssueDate: "2025-06-15",
-  },
-  {
-    id: 2,
-    memberName: "김영희",
-    memberType: "funeral",
-    company: "하늘장례식장",
-    currentPoints: 75000,
-    currentCash: 150000,
-    lastIssueDate: "2025-06-14",
-  },
-  {
-    id: 3,
-    memberName: "박철수",
-    memberType: "manager",
-    company: "평안상조",
-    currentPoints: 30000,
-    currentCash: 80000,
-    lastIssueDate: "2025-06-13",
-  },
-  {
-    id: 4,
-    memberName: "이미영",
-    memberType: "funeral",
-    company: "천국장례식장",
-    currentPoints: 120000,
-    currentCash: 200000,
-    lastIssueDate: "2025-06-12",
-  },
-];
-
 export default function PointIssuePage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = usePointIssues()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState<PointIssue[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API에서 유저 데이터 가져오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await userAPI.getUserList();
+        console.log("🚀 ~ fetchData ~ result:", result)
+        const users = [
+          ...result.data.managers.map((manager: any) => ({
+            id: manager.managerId,
+            memberName: manager.managerName,
+            memberType: "manager",
+            company: manager.managerBankHolder,
+            currentPoints: manager.managerPoint,
+            currentCash: manager.managerCash,
+            lastIssueDate: manager.updatedAt,
+          })),
+          ...result.data.funerals.map((funeral: any) => ({
+            id: funeral.funeralId,
+            memberName: funeral.funeralName,
+            memberType: "funeral",
+            company: funeral.funeralBankHolder,
+            currentPoints: funeral.funeralPoint,
+            currentCash: funeral.funeralCash,
+            lastIssueDate: funeral.updatedAt,
+          })),
+        ];
+        setData(users);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // 필터링 및 검색 로직
   const filteredData = data.filter((item) => {
+    const memberName = item.memberType === "manager" ? item.memberName : item.memberName;
+    const company = item.memberType === "manager" ? item.company : item.company;
+    console.log("🚀 ~ filteredData ~ item:", item)
+
     const matchesSearch =
-      item.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchTerm.toLowerCase());
+      (memberName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (company?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesType = filterType === "all" || item.memberType === filterType;
     return matchesSearch && matchesType;
   });
 
-  // TODO: API 도입 시 useMutation으로 변경
-  // const issueMutation = useIssuePoint()
   const handleIssue = async (issueData: {
     memberId: number;
     amount: number;
@@ -94,9 +92,6 @@ export default function PointIssuePage() {
   }) => {
     console.log("포인트 지급 요청:", issueData);
     // TODO: 포인트 지급 API 호출
-    // await issueMutation.mutateAsync(issueData)
-    // 성공 시 목록 새로고침
-    // queryClient.invalidateQueries(['point-issues'])
 
     // 더미데이터 업데이트 (임시)
     setData((prev) =>
@@ -128,6 +123,14 @@ export default function PointIssuePage() {
       );
     }
   };
+
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
+
+  if (error) {
+    return <div>에러: {error}</div>;
+  }
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
@@ -184,10 +187,10 @@ export default function PointIssuePage() {
                       {item.company}
                     </div>
                     <div className="min-w-[120px] text-sm text-muted-foreground">
-                      포인트: {item.currentPoints.toLocaleString()}원
+                      포인트: {item.currentPoints ? item.currentPoints.toLocaleString() : '0'}원
                     </div>
                     <div className="min-w-[120px] text-sm text-muted-foreground">
-                      캐시: {item.currentCash.toLocaleString()}원
+                      캐시: {item.currentCash ? item.currentCash.toLocaleString() : '0'}원
                     </div>
                     <div className="min-w-[120px] text-xs text-gray-500">
                       {item.lastIssueDate}

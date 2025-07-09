@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 
 import { useState } from "react";
+import { cashAPI } from "@/lib/api";
 
 interface PointIssueDialogProps {
   trigger: React.ReactNode;
@@ -64,6 +65,11 @@ export default function PointIssueDialog({
 
     setIsSubmitting(true);
     try {
+      if (type === "cash") {
+        // 캐시 지급 API 호출
+        await cashAPI.addCashToUser(memberId, numAmount, memberType);
+      }
+
       await onIssue({
         memberId,
         amount: numAmount,

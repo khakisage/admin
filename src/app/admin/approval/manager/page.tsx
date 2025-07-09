@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { approvalAPI } from "@/lib/api";
 
 interface ManagerRequest {
   id: number;
@@ -78,42 +79,128 @@ const dummyData: ManagerRequest[] = [
 const REJECT_REASONS = ["서류 미비", "정보 불일치", "연락 불가", "기타"];
 
 export default function ManagerApprovalPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useManagerRequests()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data, setData] = useState(dummyData);
+  const [approvedList, setApprovedList] = useState<ManagerRequest[]>([]);
+  const [requestList, setRequestList] = useState<ManagerRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [rejectDialogId, setRejectDialogId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [fileData, setFileData] = useState<any>(null);
+  const [fileLoading, setFileLoading] = useState(false);
 
-  // TODO: API 도입 시 useMutation으로 변경
-  // const approveMutation = useApproveManager()
-  const handleApprove = (id: number) => {
-    console.log(`승인 요청: ${id}`);
-    // TODO: 승인 API 호출
-    // approveMutation.mutate(id, {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries(['manager-requests'])
-    //   }
-    // })
-    // 승인 후 목록에서 제거
-    setData((prev) => prev.filter((item) => item.id !== id));
+  // API로 데이터 가져오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await approvalAPI.getManagerRequests();
+        console.log("🚀 ~ fetchData ~ response:", response);
+
+        // approved(승인됨), requests(대기중) 분리
+        const approvedData = response.data?.approved?.map((item: any) => ({
+          id: item.managerId,
+          name: item.managerName,
+          phone: item.managerPhoneNumber,
+          company: item.managerBankName, // 적절한 필드로 교체
+          createdAt: item.createdAt,
+          images: [],
+          files: [],
+        })) || [];
+
+        const requestData = response.data?.requests?.map((item: any) => ({
+          id: item.managerId,
+          name: item.managerName,
+          phone: item.managerPhoneNumber,
+          company: item.managerBankName, // 적절한 필드로 교체
+          createdAt: item.createdAt,
+          images: [],
+          files: [],
+        })) || [];
+
+        setApprovedList(approvedData);
+        setRequestList(requestData);
+      } catch (error) {
+        console.error("팀장 가입 요청 목록 조회 실패:", error);
+        setError("팀장 가입 요청 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleApprove = async (id: number) => {
+    try {
+      await approvalAPI.setManagerApproval(id, true);
+      setRequestList((prev) => prev.filter((item) => item.id !== id));
+      // 필요하다면 승인 리스트로 이동 처리도 가능
+    } catch (e) {
+      alert("승인 처리에 실패했습니다.");
+    }
   };
 
   // TODO: API 도입 시 useMutation으로 변경
   // const rejectMutation = useRejectManager()
-  const handleReject = (id: number) => {
-    setRejectDialogId(id);
-    setRejectReason("");
+  const handleReject = async (managerId: string, reason: string) => {
+    try {
+      await approvalAPI.setManagerApproval(managerId, false, reason);
+      // 추가적인 로직 (예: 상태 업데이트)
+    } catch (error) {
+      console.error("거절 처리 실패:", error);
+    }
   };
 
-  const handleRejectConfirm = (id: number) => {
-    console.log(`거절 요청: ${id}, 사유: ${rejectReason}`);
-    // TODO: 거절 API 호출 및 목록에서 제거
-    setData((prev) => prev.filter((item) => item.id !== id));
-    setRejectDialogId(null);
-    setRejectReason("");
+  const handleRejectConfirm = async (id: number) => {
+    try {
+      await approvalAPI.setManagerApproval(id, false, rejectReason);
+      setRequestList((prev) => prev.filter((item) => item.id !== id));
+      setRejectDialogId(null);
+      setRejectReason("");
+    } catch (e) {
+      alert("거절 처리에 실패했습니다.");
+    }
   };
+
+  const handleOpenAttachment = async (managerId: string) => {
+    setFileLoading(true);
+    try {
+      const res = await approvalAPI.getManagerFiles(managerId);
+      setFileData(res.data); // 파일 데이터 저장
+    } catch (e) {
+      setFileData(null);
+    } finally {
+      setFileLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-muted-foreground">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
@@ -122,13 +209,14 @@ export default function ManagerApprovalPage() {
           <CardTitle>팀장 가입 요청 목록</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto p-0">
-          {data.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+          <h2 className="font-bold mb-2">가입 대기중인 팀장</h2>
+          {requestList.length === 0 ? (
+            <div className="text-center py-4 text-muted-foreground">
               대기 중인 가입 요청이 없습니다.
             </div>
           ) : (
-            <div className="p-6 space-y-4">
-              {data.map((item) => (
+            <div className="space-y-4">
+              {requestList.map((item) => (
                 <div
                   key={item.id}
                   className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors"
@@ -153,24 +241,19 @@ export default function ManagerApprovalPage() {
                         ⋯
                       </MenubarTrigger>
                       <MenubarContent>
-                        {/* TODO: API 도입 시 requestId와 requestType만 전달 */}
-                        {/* <AttachmentDialog
-                          trigger={
-                            <MenubarItem onSelect={(e) => e.preventDefault()}>
-                              첨부파일 보기
-                            </MenubarItem>
-                          }
-                          requestId={item.id}
-                          requestType="manager"
-                        /> */}
                         <AttachmentDialog
                           trigger={
-                            <MenubarItem onSelect={(e) => e.preventDefault()}>
+                            <MenubarItem
+                              onSelect={async (e) => {
+                                e.preventDefault();
+                                await handleOpenAttachment(item.id.toString());
+                              }}
+                            >
                               첨부파일 보기
                             </MenubarItem>
                           }
-                          images={item.images}
-                          files={item.files}
+                          files={fileData ? fileData.files : []}
+                          loading={fileLoading}
                         />
                         <MenubarItem onClick={() => handleApprove(item.id)}>
                           승인
@@ -185,7 +268,7 @@ export default function ManagerApprovalPage() {
                             <MenubarItem
                               onSelect={(e) => {
                                 e.preventDefault();
-                                handleReject(item.id);
+                                handleReject(item.id.toString(), rejectReason);
                               }}
                             >
                               거절
@@ -239,6 +322,60 @@ export default function ManagerApprovalPage() {
                             </div>
                           </DialogContent>
                         </Dialog>
+                      </MenubarContent>
+                    </MenubarMenu>
+                  </Menubar>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <h2 className="font-bold mt-8 mb-2">가입 승인된 팀장</h2>
+          {approvedList.length === 0 ? (
+            <div className="text-center py-4 text-muted-foreground">
+              승인된 팀장이 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {approvedList.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center space-x-8 flex-1">
+                    <div className="min-w-[120px]">
+                      <div className="font-semibold">{item.name}</div>
+                    </div>
+                    <div className="min-w-[150px] text-sm text-muted-foreground">
+                      {item.phone}
+                    </div>
+                    <div className="min-w-[120px] text-sm text-muted-foreground">
+                      {item.company}
+                    </div>
+                    <div className="min-w-[120px] text-xs text-gray-500">
+                      {item.createdAt}
+                    </div>
+                  </div>
+                  <Menubar>
+                    <MenubarMenu>
+                      <MenubarTrigger className="cursor-pointer">
+                        ⋯
+                      </MenubarTrigger>
+                      <MenubarContent>
+                        <AttachmentDialog
+                          trigger={
+                            <MenubarItem
+                              onSelect={async (e) => {
+                                e.preventDefault();
+                                await handleOpenAttachment(item.id.toString());
+                              }}
+                            >
+                              첨부파일 보기
+                            </MenubarItem>
+                          }
+                          files={fileData ? fileData.files : []}
+                          loading={fileLoading}
+                        />
                       </MenubarContent>
                     </MenubarMenu>
                   </Menubar>
