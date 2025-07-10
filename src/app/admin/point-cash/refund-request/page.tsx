@@ -43,31 +43,26 @@ export default function RefundRequestPage() {
       try {
         setLoading(true);
         const result = await cashAPI.getAllRefundRequests(filterType);
-        console.log("🚀 ~ fetchData ~ result:", result)
-        // managers, funerals 배열을 합쳐서 RefundRequest[] 형태로 변환
-        const managers = (result.data.managers || []).map((item: any) => ({
-          id: item.id,
-          memberName: item.memberName,
-          memberType: "manager",
-          company: item.company,
-          requestDate: item.requestDate,
-          amount: item.amount,
-          bankName: item.bankName,
-          accountNumber: item.accountNumber,
-          status: item.status,
-        }));
-        const funerals = (result.data.funerals || []).map((item: any) => ({
-          id: item.id,
-          memberName: item.memberName,
-          memberType: "funeral",
-          company: item.company,
-          requestDate: item.requestDate,
-          amount: item.amount,
-          bankName: item.bankName,
-          accountNumber: item.accountNumber,
-          status: item.status,
-        }));
-        setData([...managers, ...funerals]);
+        console.log("🚀 ~ fetchData ~ result:", result);
+
+        // approved, rejected, requested 배열을 합쳐서 RefundRequest[] 형태로 변환
+        const toRefundRequest = (item: any, status: string): RefundRequest => ({
+          id: item.refundRequestId || item.id,
+          memberName: item.manager?.managerName || item.funeral?.funeralName || "",
+          memberType: item.manager ? "manager" : "funeral",
+          company: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
+          requestDate: item.createdAt,
+          amount: item.refundAmount,
+          bankName: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
+          accountNumber: item.manager?.managerAccountNumber || item.funeral?.funeralAccountNumber || "",
+          status,
+        });
+
+        const requested = (result.data.requested || []).map((item: any) => toRefundRequest(item, "pending"));
+        const approved = (result.data.approved || []).map((item: any) => toRefundRequest(item, "approved"));
+        const rejected = (result.data.rejected || []).map((item: any) => toRefundRequest(item, "rejected"));
+
+        setData([...requested, ...approved, ...rejected]);
       } catch (e: any) {
         setError(e.message);
       } finally {

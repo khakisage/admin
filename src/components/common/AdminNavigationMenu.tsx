@@ -140,7 +140,7 @@ export const AdminNavigationMenu = () => {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger>포인트 관리</NavigationMenuTrigger>
+            <NavigationMenuTrigger>캐시 관리</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[500px] gap-2 p-4 md:grid-cols-2">
                 {pointItems.map((item) => (

@@ -37,35 +37,27 @@ export default function RefundHistoryPage() {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return; // <-- 여기서만 조건 분기!
+    if (!hydrated) return;
     const fetchData = async () => {
       try {
         setLoading(true);
         const result = await cashAPI.getRefundHistory(filterType);
-        // managers, funerals 배열을 합쳐서 RefundHistory[] 형태로 변환
-        const managers = (result.data.managers || []).map((item: any) => ({
-          id: item.id,
-          memberName: item.memberName,
-          memberType: "manager",
-          company: item.company,
-          refundDate: item.refundDate,
-          amount: item.amount,
-          bankName: item.bankName,
-          accountNumber: item.accountNumber,
-          status: item.status,
+        console.log("🚀 ~ fetchData ~ result:", result);
+
+        // data 배열을 RefundHistory[]로 변환
+        const histories = (result.data || []).map((item: any) => ({
+          id: item.refundRequestId || item.id,
+          memberName: item.manager?.managerName || item.funeral?.funeralName || "",
+          memberType: item.manager ? "manager" : "funeral",
+          company: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
+          refundDate: item.createdAt,
+          amount: item.refundAmount,
+          bankName: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
+          accountNumber: item.manager?.managerAccountNumber || item.funeral?.funeralAccountNumber || "",
+          status: item.status === "approved" ? "completed" : "failed", // 필요시 status 매핑
         }));
-        const funerals = (result.data.funerals || []).map((item: any) => ({
-          id: item.id,
-          memberName: item.memberName,
-          memberType: "funeral",
-          company: item.company,
-          refundDate: item.refundDate,
-          amount: item.amount,
-          bankName: item.bankName,
-          accountNumber: item.accountNumber,
-          status: item.status,
-        }));
-        setData([...managers, ...funerals]);
+
+        setData(histories);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -73,9 +65,9 @@ export default function RefundHistoryPage() {
       }
     };
     fetchData();
-  }, [filterType, hydrated]); // hydrated도 의존성에 추가
+  }, [filterType, hydrated]);
 
-  if (!hydrated) return null; // Hook 아래에서만 return!
+  if (!hydrated) return null;
 
   const filteredData = data.filter((item) => {
     const matchesSearch =
