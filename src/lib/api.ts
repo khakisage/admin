@@ -191,7 +191,7 @@ export const noticeAPI = {
     userType: "manager" | "funeral" | "all";
     isActive: boolean;
   }) => {
-    const response = await api.post("/admin/notices/create", {
+    const response = await api.post("/admin/notice/add/create", {
       title,
       content,
       userType,

@@ -54,7 +54,7 @@ export default function RefundRequestPage() {
           requestDate: item.createdAt,
           amount: item.refundAmount,
           bankName: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
-          accountNumber: item.manager?.managerAccountNumber || item.funeral?.funeralAccountNumber || "",
+          accountNumber: item.manager?.managerBankNumber || item.funeral?.funeralBankNumber || "",
           status,
         });
 
