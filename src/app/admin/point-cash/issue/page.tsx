@@ -15,6 +15,8 @@ import { toast } from "sonner";
 
 import { useState, useEffect } from "react";
 import { userAPI } from "@/lib/api";
+import { ko } from "date-fns/locale";
+import { format } from "date-fns";
 
 interface CashIssue {
   id: number;
@@ -176,7 +178,7 @@ export default function CashIssuePage() {
                       캐시: {item.currentCash ? item.currentCash.toLocaleString() : '0'}원
                     </div>
                     <div className="min-w-[120px] text-xs text-gray-500">
-                      {item.lastIssueDate}
+                      {format(new Date(item.lastIssueDate), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
                     </div>
                   </div>
                   <CashIssueDialog

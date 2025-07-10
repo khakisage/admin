@@ -33,6 +33,37 @@ interface Notice {
   isActive: boolean;
 }
 
+
+// TODO: API 도입 시 제거하고 useQuery로 대체
+// const { data, isLoading, error } = useNotices()
+// API 엔드포인트: GET /api/admin/notices
+// const useNotices = () => {
+//   return useQuery({
+//     queryKey: ['notices'],
+//     queryFn: async () => {
+//       const response = await fetch('/api/admin/notices')
+//       if (!response.ok) {
+//         throw new Error('공지사항 목록 조회 실패')
+//       }
+//       const data = await response.json()
+//       return data.data
+//     }
+//   })
+// }
+
+// TODO: API 도입 시 useMutation으로 변경
+// const deleteMutation = useDeleteNotice()
+// const deleteNotice = async (id: number) => {
+//   try {
+//     await deleteMutation.mutateAsync(id)
+//     toast.success('공지사항이 삭제되었습니다.')
+//     queryClient.invalidateQueries(['notices'])
+//   } catch (error) {
+//     toast.error('공지사항 삭제에 실패했습니다.')
+//   }
+// }
+
+
 export default function NoticesPage() {
   const [data, setData] = useState<Notice[]>([]);
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
@@ -40,12 +71,10 @@ export default function NoticesPage() {
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  useEffect(() => {
-    // API 호출
+  const fetchNotices = () => {
     noticeAPI
       .getNoticeList({ userType: userTypeFilter === "all" ? undefined : userTypeFilter })
       .then((res) => {
-        // 백엔드 데이터 가공
         const notices = res.data.map((item: any) => ({
           id: item.noticeId,
           title: item.title,
@@ -57,9 +86,11 @@ export default function NoticesPage() {
         }));
         setData(notices);
       })
-      .catch((err) => {
-        setData([]); // 에러 시 빈 배열
-      });
+      .catch(() => setData([]));
+  };
+
+  useEffect(() => {
+    fetchNotices();
   }, [userTypeFilter]);
 
   // 필터링 및 정렬 로직
@@ -119,6 +150,7 @@ export default function NoticesPage() {
           )
         );
         toast.success("공지사항이 수정되었습니다.");
+        fetchNotices(); // 목록 갱신!
         setIsEditDialogOpen(false);
         setEditingNotice(null);
       } else {
@@ -133,7 +165,9 @@ export default function NoticesPage() {
           updatedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
         };
         setData((prev) => [newNotice, ...prev]);
+        fetchNotices(); // 목록 갱신!
         toast.success("공지사항이 등록되었습니다.");
+
       }
     } catch (error) {
       console.error("공지사항 저장 실패:", error);

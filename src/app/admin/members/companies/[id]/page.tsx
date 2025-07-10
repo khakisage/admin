@@ -46,7 +46,7 @@ export default function CompanyMemberDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col items-center p-8 bg-white">
-      <div className="w-full">
+      <div className="w-full overflow-y-auto" style={{scrollbarWidth: "none", msOverflowStyle: "none"}}>
         {loading ? (
           <CompanyMemberInfoCardSkeleton />
         ) : (

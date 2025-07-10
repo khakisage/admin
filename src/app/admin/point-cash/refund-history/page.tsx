@@ -401,7 +401,7 @@ export default function RefundHistoryPage() {
                         {item.amount.toLocaleString()}원
                       </div>
                       <div className="min-w-[150px] text-sm text-muted-foreground">
-                        {item.refundDate}
+                        {format(new Date(item.refundDate), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
                       </div>
                       <div className="min-w-[150px] text-sm text-muted-foreground">
                         {item.bankName} {item.accountNumber}
