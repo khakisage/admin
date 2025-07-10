@@ -183,6 +183,7 @@ export const cashAPI = {
   // 특정 상조팀장의 캐시 충전 내역 조회
   getManagerCashChargeHistoryById: async (memberId: string, memberType: string) => {
     const response = await api.get(`/admin/refund/history/${memberId}?type=${memberType}`);
+    console.log("🚀 ~ getManagerCashChargeHistoryById ~ response:", response)
     return response.data;
   },
 

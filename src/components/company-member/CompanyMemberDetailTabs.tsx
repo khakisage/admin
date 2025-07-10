@@ -5,7 +5,7 @@ import CompanyMemberCashRefundList from "./CompanyMemberCashRefundList";
 import CompanyMemberApplyList from "./CompanyMemberApplyList";
 
 const TAB_LIST = [
-  { key: "charge", label: "캐시 충전 내역" },
+  // { key: "charge", label: "캐시 충전 내역" },
   { key: "refundRequest", label: "캐시 환급 신청 내역" },
   { key: "refund", label: "캐시 환급 내역" },
   { key: "apply", label: "출동 신청 내역" },
@@ -38,9 +38,9 @@ export default function CompanyMemberDetailTabs({
         ))}
       </div>
       <div>
-        {tab === "charge" && (
+        {/* {tab === "charge" && (
           <CompanyMemberCashChargeList memberId={memberId} memberType={memberType} />
-        )}
+        )} */}
         {tab === "refundRequest" && (
           <CompanyMemberCashRefundRequestList memberId={memberId} memberType={memberType} />
         )}

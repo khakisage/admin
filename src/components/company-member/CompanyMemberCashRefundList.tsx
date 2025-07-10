@@ -68,7 +68,7 @@ export default function CompanyMemberCashRefundList({
               </div>
               <div className="text-right">{getStatusLabel(item.status)}</div>
             </div>
-            <Menubar>
+            {/* <Menubar>
               <MenubarMenu>
                 <MenubarTrigger asChild>
                   <button className="p-2 rounded hover:bg-gray-100">
@@ -81,7 +81,7 @@ export default function CompanyMemberCashRefundList({
                   </MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
-            </Menubar>
+            </Menubar> */}
           </div>
         ))
       ) : (
