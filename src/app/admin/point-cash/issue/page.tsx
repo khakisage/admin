@@ -10,24 +10,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import PointIssueDialog from "@/components/common/PointIssueDialog";
+import CashIssueDialog from "@/components/common/PointIssueDialog";
 import { toast } from "sonner";
 
 import { useState, useEffect } from "react";
 import { userAPI } from "@/lib/api";
 
-interface PointIssue {
+interface CashIssue {
   id: number;
   memberName: string;
   memberType: "manager" | "funeral";
   company: string;
-  currentPoints: number;
   currentCash: number;
   lastIssueDate: string;
 }
 
-export default function PointIssuePage() {
-  const [data, setData] = useState<PointIssue[]>([]);
+export default function CashIssuePage() {
+  const [data, setData] = useState<CashIssue[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [loading, setLoading] = useState(true);
@@ -46,7 +45,6 @@ export default function PointIssuePage() {
             memberName: manager.managerName,
             memberType: "manager",
             company: manager.managerBankHolder,
-            currentPoints: manager.managerPoint,
             currentCash: manager.managerCash,
             lastIssueDate: manager.updatedAt,
           })),
@@ -55,7 +53,6 @@ export default function PointIssuePage() {
             memberName: funeral.funeralName,
             memberType: "funeral",
             company: funeral.funeralBankHolder,
-            currentPoints: funeral.funeralPoint,
             currentCash: funeral.funeralCash,
             lastIssueDate: funeral.updatedAt,
           })),
@@ -88,26 +85,17 @@ export default function PointIssuePage() {
     memberId: number;
     amount: number;
     reason: string;
-    type: "point" | "cash";
   }) => {
-    console.log("포인트 지급 요청:", issueData);
-    // TODO: 포인트 지급 API 호출
+    console.log("캐시 지급 요청:", issueData);
 
-    // 더미데이터 업데이트 (임시)
+    // 데이터 업데이트
     setData((prev) =>
       prev.map((item) => {
         if (item.id === issueData.memberId) {
-          if (issueData.type === "point") {
-            return {
-              ...item,
-              currentPoints: item.currentPoints + issueData.amount,
-            };
-          } else {
-            return {
-              ...item,
-              currentCash: item.currentCash + issueData.amount,
-            };
-          }
+          return {
+            ...item,
+            currentCash: item.currentCash + issueData.amount,
+          };
         }
         return item;
       })
@@ -117,9 +105,7 @@ export default function PointIssuePage() {
     const member = data.find((item) => item.id === issueData.memberId);
     if (member) {
       toast.success(
-        `${member.memberName}에게 ${
-          issueData.type === "point" ? "포인트" : "캐시"
-        } ${issueData.amount.toLocaleString()}원이 지급되었습니다.`
+        `${member.memberName}에게 캐시 ${issueData.amount.toLocaleString()}원이 지급되었습니다.`
       );
     }
   };
@@ -136,7 +122,7 @@ export default function PointIssuePage() {
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
       <Card className="w-full h-full flex flex-col">
         <CardHeader className="flex-shrink-0">
-          <CardTitle>포인트/캐시 지급</CardTitle>
+          <CardTitle>캐시 지급</CardTitle>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto p-0">
           {/* 검색 및 필터 영역 */}
@@ -162,7 +148,7 @@ export default function PointIssuePage() {
             </div>
           </div>
 
-          {/* 포인트 지급 목록 */}
+          {/* 캐시 지급 목록 */}
           <div className="p-6 space-y-4">
             {filteredData.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -187,19 +173,16 @@ export default function PointIssuePage() {
                       {item.company}
                     </div>
                     <div className="min-w-[120px] text-sm text-muted-foreground">
-                      포인트: {item.currentPoints ? item.currentPoints.toLocaleString() : '0'}원
-                    </div>
-                    <div className="min-w-[120px] text-sm text-muted-foreground">
                       캐시: {item.currentCash ? item.currentCash.toLocaleString() : '0'}원
                     </div>
                     <div className="min-w-[120px] text-xs text-gray-500">
                       {item.lastIssueDate}
                     </div>
                   </div>
-                  <PointIssueDialog
+                  <CashIssueDialog
                     trigger={
                       <Button variant="outline" size="sm">
-                        포인트 지급
+                        캐시 지급
                       </Button>
                     }
                     memberId={item.id}

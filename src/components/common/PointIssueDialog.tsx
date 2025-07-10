@@ -11,19 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 
 import { useState } from "react";
 import { cashAPI } from "@/lib/api";
 
-interface PointIssueDialogProps {
+interface CashIssueDialogProps {
   trigger: React.ReactNode;
   memberId: number;
   memberName: string;
@@ -33,22 +26,20 @@ interface PointIssueDialogProps {
     memberId: number;
     amount: number;
     reason: string;
-    type: "point" | "cash";
   }) => void;
 }
 
-export default function PointIssueDialog({
+export default function CashIssueDialog({
   trigger,
   memberId,
   memberName,
   memberType,
   company,
   onIssue,
-}: PointIssueDialogProps) {
+}: CashIssueDialogProps) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
-  const [type, setType] = useState<"point" | "cash">("point");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -65,26 +56,23 @@ export default function PointIssueDialog({
 
     setIsSubmitting(true);
     try {
-      if (type === "cash") {
-        // 캐시 지급 API 호출
-        await cashAPI.addCashToUser(memberId, numAmount, memberType);
-      }
+      // 캐시 지급 API 호출
+      await cashAPI.addCashToUser(memberId, numAmount, memberType);
 
       await onIssue({
         memberId,
         amount: numAmount,
         reason,
-        type,
       });
 
       // 성공 시 Dialog 닫기 및 폼 초기화
       setOpen(false);
       setAmount("");
       setReason("");
-      setType("point");
+      toast.success("캐시가 성공적으로 지급되었습니다.");
     } catch (error) {
-      console.error("포인트 지급 실패:", error);
-      toast.error("포인트 지급 중 오류가 발생했습니다.");
+      console.error("캐시 지급 실패:", error);
+      toast.error("캐시 지급 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +83,6 @@ export default function PointIssueDialog({
     setOpen(false);
     setAmount("");
     setReason("");
-    setType("point");
   };
 
   return (
@@ -105,7 +92,7 @@ export default function PointIssueDialog({
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>포인트/캐시 지급</DialogTitle>
+          <DialogTitle>캐시 지급</DialogTitle>
           <DialogDescription>
             {memberName} ({memberType === "manager" ? "상조팀장" : "장례식장"})
             - {company}
@@ -113,23 +100,6 @@ export default function PointIssueDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* 지급 유형 선택 */}
-          <div className="space-y-2">
-            <Label htmlFor="type">지급 유형</Label>
-            <Select
-              value={type}
-              onValueChange={(value: "point" | "cash") => setType(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="지급 유형을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="point">포인트</SelectItem>
-                <SelectItem value="cash">캐시</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* 금액 입력 */}
           <div className="space-y-2">
             <Label htmlFor="amount">지급 금액</Label>

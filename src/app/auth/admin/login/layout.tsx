@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "@/app/globals.css";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -13,11 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body className="antialiased font-pretendard bg-gray-200">
-        {children}
-        <Toaster />
-      </body>
-    </html>
+    <div className="antialiased font-pretendard bg-gray-200">
+      {children}
+      <Toaster />
+    </div>
   );
 }

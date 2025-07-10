@@ -198,7 +198,7 @@ export default function FuneralApprovalPage() {
         <CardHeader className="flex-shrink-0">
           <CardTitle>장례식장 가입 요청 목록</CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 overflow-auto p-0">
+        <CardContent className="flex-1 overflow-auto py-4">
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
               가입 요청 목록을 불러오는 중입니다...
