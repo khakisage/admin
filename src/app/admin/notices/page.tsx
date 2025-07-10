@@ -20,10 +20,11 @@ import { toast } from "sonner";
 import NoticeDetailDialog from "@/components/common/NoticeDetailDialog";
 import NoticeFormDialog from "@/components/common/NoticeFormDialog";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { noticeAPI } from "@/lib/api"; // 위에서 추가한 API import
 
 interface Notice {
-  id: number;
+  id: string; // UUID
   title: string;
   content: string;
   userType: "manager" | "funeral" | "all";
@@ -105,15 +106,33 @@ const dummyData: Notice[] = [
 ];
 
 export default function NoticesPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useNotices()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState<Notice[]>([]);
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    // API 호출
+    noticeAPI
+      .getNoticeList({ userType: userTypeFilter === "all" ? undefined : userTypeFilter })
+      .then((res) => {
+        // 백엔드 데이터 가공
+        const notices = res.data.map((item: any) => ({
+          id: item.noticeId,
+          title: item.title,
+          content: item.content,
+          userType: item.userType,
+          createdAt: item.createdAt.replace("T", " ").slice(0, 19),
+          updatedAt: item.updatedAt.replace("T", " ").slice(0, 19),
+          isActive: item.isVisible,
+        }));
+        setData(notices);
+      })
+      .catch((err) => {
+        setData([]); // 에러 시 빈 배열
+      });
+  }, [userTypeFilter]);
 
   // 필터링 및 정렬 로직
   const filteredAndSortedData = data
@@ -128,7 +147,7 @@ export default function NoticesPage() {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     // TODO: API 도입 시 실제 삭제 API 호출
     // deleteNotice(id)
 
@@ -143,7 +162,7 @@ export default function NoticesPage() {
   };
 
   const handleSubmitNotice = async (data: {
-    id?: number;
+    id?: string;
     title: string;
     content: string;
     userType: "manager" | "funeral" | "all";
@@ -175,7 +194,7 @@ export default function NoticesPage() {
       } else {
         // 신규 등록 로직
         const newNotice: Notice = {
-          id: Math.max(...dummyData.map((item: Notice) => item.id)) + 1,
+          id: Math.max(...data.map((item: Notice) => item.id)) + 1,
           title: data.title,
           content: data.content,
           userType: data.userType,

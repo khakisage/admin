@@ -244,14 +244,15 @@ export default function FuneralApprovalPage() {
                             ⋯
                           </MenubarTrigger>
                           <MenubarContent>
-                            <MenubarItem
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                handleOpenAttachment(item.images);
-                              }}
-                            >
-                              첨부파일 보기
-                            </MenubarItem>
+                            <AttachmentDialog
+                              trigger={
+                                <MenubarItem onSelect={(e) => e.preventDefault()}>
+                                  첨부파일 보기
+                                </MenubarItem>
+                              }
+                              images={item.images}
+                              files={item.files}
+                            />
                             <MenubarItem onClick={() => handleApprove(item.id)}>
                               승인
                             </MenubarItem>

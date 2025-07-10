@@ -167,3 +167,56 @@ export const cashAPI = {
     return response.data;
   },
 };
+
+// 공지사항 등록/수정 API
+export const noticeAPI = {
+  // 공지사항 리스트 조회
+  getNoticeList: async (params: { userType?: string; isVisible?: boolean } = {}) => {
+    const query = new URLSearchParams();
+    if (params.userType) query.append("userType", params.userType);
+    if (typeof params.isVisible === "boolean") query.append("isVisible", String(params.isVisible));
+    const response = await api.get(`/admin/notices/list?${query.toString()}`);
+    return response.data;
+  },
+
+  // 등록
+  createNotice: async ({
+    title,
+    content,
+    userType,
+    isActive,
+  }: {
+    title: string;
+    content: string;
+    userType: "manager" | "funeral" | "all";
+    isActive: boolean;
+  }) => {
+    const response = await api.post("/admin/notices/create", {
+      title,
+      content,
+      userType,
+      isVisible: isActive,
+    });
+    return response.data;
+  },
+
+  // 수정
+  updateNotice: async ({
+    id,
+    title,
+    content,
+    isActive,
+  }: {
+    id: string;
+    title: string;
+    content: string;
+    isActive: boolean;
+  }) => {
+    const response = await api.patch(`/admin/notices/update/${id}`, {
+      title,
+      content,
+      isVisible: isActive,
+    });
+    return response.data;
+  },
+};
