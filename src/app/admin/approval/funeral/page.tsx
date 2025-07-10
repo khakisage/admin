@@ -104,7 +104,8 @@ export default function FuneralApprovalPage() {
   const [error, setError] = useState<string | null>(null);
   const [rejectDialogId, setRejectDialogId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [fileData, setFileData] = useState<any>(null);
+  const [fileDialogOpen, setFileDialogOpen] = useState(false);
+  const [dialogImages, setDialogImages] = useState<string[]>([]);
   const [fileLoading, setFileLoading] = useState(false);
 
   // API로 데이터 가져오기
@@ -124,8 +125,8 @@ export default function FuneralApprovalPage() {
           funeralHall: item.funeralHallName,
           address: item.address,
           createdAt: item.createdAt,
-          images: [],
-          files: [],
+          images: item.fileUrl || [], // fileUrl을 images로 매핑
+          files: [], // 필요시 파일 객체로 변환
         })) || [];
 
         const requestData = response.data?.requests?.map((item: any) => ({
@@ -135,7 +136,7 @@ export default function FuneralApprovalPage() {
           funeralHall: item.funeralHallName,
           address: item.address,
           createdAt: item.createdAt,
-          images: [],
+          images: item.fileUrl || [],
           files: [],
         })) || [];
 
@@ -186,16 +187,9 @@ export default function FuneralApprovalPage() {
     }
   };
 
-  const handleOpenAttachment = async (funeralId: string) => {
-    setFileLoading(true);
-    try {
-      const res = await approvalAPI.getFuneralFiles(funeralId);
-      setFileData(res.data); // 파일 데이터 저장
-    } catch (e) {
-      setFileData(null);
-    } finally {
-      setFileLoading(false);
-    }
+  const handleOpenAttachment = (images: string[]) => {
+    setDialogImages(images);
+    setFileDialogOpen(true);
   };
 
   return (
@@ -250,15 +244,14 @@ export default function FuneralApprovalPage() {
                             ⋯
                           </MenubarTrigger>
                           <MenubarContent>
-                            <AttachmentDialog
-                              trigger={
-                                <MenubarItem onSelect={(e) => e.preventDefault()}>
-                                  첨부파일 보기
-                                </MenubarItem>
-                              }
-                              images={item.images}
-                              files={item.files}
-                            />
+                            <MenubarItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                handleOpenAttachment(item.images);
+                              }}
+                            >
+                              첨부파일 보기
+                            </MenubarItem>
                             <MenubarItem onClick={() => handleApprove(item.id)}>
                               승인
                             </MenubarItem>
@@ -272,7 +265,8 @@ export default function FuneralApprovalPage() {
                                 <MenubarItem
                                   onSelect={(e) => {
                                     e.preventDefault();
-                                    handleReject(item.id, rejectReason);
+                                    setRejectDialogId(item.id); // Dialog만 오픈
+                                    setRejectReason(""); // 사유 초기화
                                   }}
                                 >
                                   거절
@@ -385,6 +379,13 @@ export default function FuneralApprovalPage() {
           )}
         </CardContent>
       </Card>
+      <AttachmentDialog
+        open={fileDialogOpen}
+        onOpenChange={setFileDialogOpen}
+        images={dialogImages}
+        files={[]}
+        loading={false}
+      />
     </div>
   );
 }

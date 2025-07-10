@@ -154,7 +154,8 @@ export default function ManagerApprovalPage() {
 
   const handleRejectConfirm = async (id: number) => {
     try {
-      await approvalAPI.setManagerApproval(id, false, rejectReason);
+      console.log("거절 사유:", rejectReason); // 실제 값 확인
+      await approvalAPI.setManagerApproval(id.toString(), false, rejectReason);
       setRequestList((prev) => prev.filter((item) => item.id !== id));
       setRejectDialogId(null);
       setRejectReason("");
@@ -268,7 +269,8 @@ export default function ManagerApprovalPage() {
                             <MenubarItem
                               onSelect={(e) => {
                                 e.preventDefault();
-                                handleReject(item.id.toString(), rejectReason);
+                                setRejectDialogId(item.id); // Dialog만 오픈
+                                setRejectReason(""); // 사유 초기화
                               }}
                             >
                               거절

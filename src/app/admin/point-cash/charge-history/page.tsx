@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { useState } from "react";
+import { cashAPI } from "@/lib/api";
 
 interface ChargeHistory {
   id: number;
@@ -23,65 +23,54 @@ interface ChargeHistory {
   status: "completed" | "pending" | "failed";
 }
 
-// TODO: API 도입 시 제거하고 useQuery로 대체
-// const { data, isLoading, error } = useChargeHistory()
-const dummyData: ChargeHistory[] = [
-  {
-    id: 1,
-    amount: 100000,
-    paymentDate: "2025-06-17 14:30:00",
-    memberName: "홍길동",
-    memberType: "manager",
-    company: "하늘상조",
-    paymentMethod: "카드결제",
-    status: "completed",
-  },
-  {
-    id: 2,
-    amount: 50000,
-    paymentDate: "2025-06-16 09:15:00",
-    memberName: "김영희",
-    memberType: "funeral",
-    company: "하늘장례식장",
-    paymentMethod: "카드결제",
-    status: "completed",
-  },
-  {
-    id: 3,
-    amount: 200000,
-    paymentDate: "2025-06-15 16:45:00",
-    memberName: "박철수",
-    memberType: "manager",
-    company: "평안상조",
-    paymentMethod: "카드결제",
-    status: "completed",
-  },
-  {
-    id: 4,
-    amount: 75000,
-    paymentDate: "2025-06-14 11:20:00",
-    memberName: "이미영",
-    memberType: "funeral",
-    company: "천국장례식장",
-    paymentMethod: "카드결제",
-    status: "pending",
-  },
-];
-
 export default function ChargeHistoryPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useChargeHistory()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data] = useState(dummyData);
+  const [data, setData] = useState<ChargeHistory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 필터링 및 검색 로직
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await cashAPI.getAllCashChargeHistory();
+        console.log("🚀 ~ getAllCashChargeHistory ~ result:", result)
+        // managers, funerals 배열을 합쳐서 ChargeHistory[] 형태로 변환
+        const managers = (result.data.managers || []).map((item: any) => ({
+          id: item.id,
+          amount: item.amount,
+          paymentDate: item.paymentDate,
+          memberName: item.memberName,
+          memberType: "manager",
+          company: item.company,
+          paymentMethod: item.paymentMethod,
+          status: item.status,
+        }));
+        const funerals = (result.data.funerals || []).map((item: any) => ({
+          id: item.id,
+          amount: item.amount,
+          paymentDate: item.paymentDate,
+          memberName: item.memberName,
+          memberType: "funeral",
+          company: item.company,
+          paymentMethod: item.paymentMethod,
+          status: item.status,
+        }));
+        setData([...managers, ...funerals]);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const filteredData = data.filter((item) => {
     const matchesSearch =
-      item.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchTerm.toLowerCase());
+      item.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.company?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "all" || item.memberType === filterType;
     return matchesSearch && matchesType;
   });
@@ -111,6 +100,9 @@ export default function ChargeHistoryPage() {
         return status;
     }
   };
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>에러: {error}</div>;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">

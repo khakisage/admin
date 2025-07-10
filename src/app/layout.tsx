@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="antialiased font-pretendard">
+      <body className="antialiased font-pretendard bg-gray-200">
         {children}
         <Toaster />
       </body>

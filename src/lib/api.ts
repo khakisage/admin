@@ -14,6 +14,7 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
+    console.log("🚀 ~ token:", token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,12 +27,13 @@ api.interceptors.request.use(
 
 // 응답 인터셉터 - 에러 처리
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // 토큰 만료 시 로그인 페이지로 리다이렉트
+    const isLoginRequest =
+      error.config?.url?.includes("/admin/auth/login") ||
+      error.config?.url?.includes("/api/admin/auth/login");
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       window.location.href = "/auth/admin/login";
@@ -81,9 +83,12 @@ export const approvalAPI = {
   
   // 팀장 가입 승인/거절 처리
   setManagerApproval: async (managerId: string, isApproved: boolean, rejectReason?: string) => {
+    console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ managerId:", managerId)
+    console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ isApproved:", isApproved)
+    console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ rejectReason:", rejectReason)
     const response = await api.patch(`/admin/manager/requests/approve/${managerId}`, {
       isApproved,
-      rejectReason: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
+      message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
     });
     return response.data;
   },
@@ -96,9 +101,9 @@ export const approvalAPI = {
   
   // 장례식장 가입 승인/거절 처리
   setFuneralApproval: async (funeralId: string, isApproved: boolean, rejectReason?: string) => {
-    const response = await api.patch(`/funeral/requests/approve/${funeralId}`, {
+    const response = await api.patch(`/admin/funeral/requests/approve/${funeralId}`, {
       isApproved,
-      rejectReason: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
+      message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
     });
     return response.data;
   },
@@ -130,6 +135,35 @@ export const cashAPI = {
       amount,
       userType,
     });
+    return response.data;
+  },
+  getAllCashChargeHistory: async () => {
+    const response = await api.get("/admin/cash/all/history");
+    return response.data;
+  },
+  getAllRefundRequests: async (type: string = "all") => {
+    const response = await api.get(`/admin/cash/all/refund?type=${type}`);
+    return response.data;
+  },
+
+  // 환급 승인/거절 처리
+  processRefundApproval: async ({
+    type,
+    requestId,
+    action,
+  }: {
+    type: "manager" | "funeral";
+    requestId: number;
+    action: "approve" | "reject";
+  }) => {
+    const response = await api.patch(`/admin/cash/${type}/${requestId}`, {
+      action,
+    });
+    return response.data;
+  },
+
+  getRefundHistory: async (type: string = "all") => {
+    const response = await api.get(`/admin/cash/refund/history?type=${type}`);
     return response.data;
   },
 };

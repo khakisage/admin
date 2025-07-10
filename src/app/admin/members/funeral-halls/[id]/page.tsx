@@ -21,21 +21,24 @@ function fetchFuneralHallMemberDetail(id: string) {
   });
 }
 
-export default function FuneralHallMemberDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function FuneralHallMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string | null>(null);
   const [member, setMember] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchFuneralHallMemberDetail(params.id)
-    fetchFuneralHallMemberDetail(params.id).then((data) => {
+    params.then((p) => setId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchFuneralHallMemberDetail(id).then((data) => {
       setMember(data);
       setLoading(false);
     });
-  }, [params.id]);
+  }, [id]);
+
+  if (!id) return null;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col items-center p-8 bg-white">
@@ -102,7 +105,7 @@ export default function FuneralHallMemberDetailPage({
           </CardContent>
         </Card>
         {/* 공통 탭 UI */}
-        <FuneralHallMemberDetailTabs memberId={params.id} />
+        <FuneralHallMemberDetailTabs memberId={id} />
       </div>
     </div>
   );

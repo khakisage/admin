@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { useState } from "react";
+import { cashAPI } from "@/lib/api";
 
 interface RefundHistory {
   id: number;
@@ -24,69 +24,63 @@ interface RefundHistory {
   status: "completed" | "failed";
 }
 
-// TODO: API 도입 시 제거하고 useQuery로 대체
-// const { data, isLoading, error } = useRefundHistory()
-const dummyData: RefundHistory[] = [
-  {
-    id: 1,
-    memberName: "홍길동",
-    memberType: "manager",
-    company: "하늘상조",
-    refundDate: "2025-06-17 14:30:00",
-    amount: 50000,
-    bankName: "신한은행",
-    accountNumber: "110-123-456789",
-    status: "completed",
-  },
-  {
-    id: 2,
-    memberName: "김영희",
-    memberType: "funeral",
-    company: "하늘장례식장",
-    refundDate: "2025-06-16 09:15:00",
-    amount: 100000,
-    bankName: "국민은행",
-    accountNumber: "123-456-789012",
-    status: "completed",
-  },
-  {
-    id: 3,
-    memberName: "박철수",
-    memberType: "manager",
-    company: "평안상조",
-    refundDate: "2025-06-15 16:45:00",
-    amount: 75000,
-    bankName: "우리은행",
-    accountNumber: "1002-123-456789",
-    status: "completed",
-  },
-  {
-    id: 4,
-    memberName: "이미영",
-    memberType: "funeral",
-    company: "천국장례식장",
-    refundDate: "2025-06-14 11:20:00",
-    amount: 30000,
-    bankName: "하나은행",
-    accountNumber: "123-456789-01",
-    status: "failed",
-  },
-];
-
 export default function RefundHistoryPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useRefundHistory()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data] = useState(dummyData);
+  const [data, setData] = useState<RefundHistory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
-  // 필터링 및 검색 로직
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return; // <-- 여기서만 조건 분기!
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await cashAPI.getRefundHistory(filterType);
+        // managers, funerals 배열을 합쳐서 RefundHistory[] 형태로 변환
+        const managers = (result.data.managers || []).map((item: any) => ({
+          id: item.id,
+          memberName: item.memberName,
+          memberType: "manager",
+          company: item.company,
+          refundDate: item.refundDate,
+          amount: item.amount,
+          bankName: item.bankName,
+          accountNumber: item.accountNumber,
+          status: item.status,
+        }));
+        const funerals = (result.data.funerals || []).map((item: any) => ({
+          id: item.id,
+          memberName: item.memberName,
+          memberType: "funeral",
+          company: item.company,
+          refundDate: item.refundDate,
+          amount: item.amount,
+          bankName: item.bankName,
+          accountNumber: item.accountNumber,
+          status: item.status,
+        }));
+        setData([...managers, ...funerals]);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [filterType, hydrated]); // hydrated도 의존성에 추가
+
+  if (!hydrated) return null; // Hook 아래에서만 return!
+
   const filteredData = data.filter((item) => {
     const matchesSearch =
-      item.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchTerm.toLowerCase());
+      item.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.company?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "all" || item.memberType === filterType;
     return matchesSearch && matchesType;
   });
@@ -112,6 +106,9 @@ export default function RefundHistoryPage() {
         return status;
     }
   };
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>에러: {error}</div>;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,8 +17,7 @@ import {
   MenubarContent,
   MenubarItem,
 } from "@/components/ui/menubar";
-
-import { useState } from "react";
+import { cashAPI } from "@/lib/api";
 
 interface RefundRequest {
   id: number;
@@ -31,107 +31,87 @@ interface RefundRequest {
   status: "pending" | "approved" | "rejected" | "completed";
 }
 
-// TODO: API 도입 시 제거하고 useQuery로 대체
-// const { data, isLoading, error } = useRefundRequests()
-const dummyData: RefundRequest[] = [
-  {
-    id: 1,
-    memberName: "홍길동",
-    memberType: "manager",
-    company: "하늘상조",
-    requestDate: "2025-06-17",
-    amount: 50000,
-    bankName: "신한은행",
-    accountNumber: "110-123-456789",
-    status: "pending",
-  },
-  {
-    id: 2,
-    memberName: "김영희",
-    memberType: "funeral",
-    company: "하늘장례식장",
-    requestDate: "2025-06-16",
-    amount: 100000,
-    bankName: "국민은행",
-    accountNumber: "123-456-789012",
-    status: "pending",
-  },
-  {
-    id: 3,
-    memberName: "박철수",
-    memberType: "manager",
-    company: "평안상조",
-    requestDate: "2025-06-15",
-    amount: 75000,
-    bankName: "우리은행",
-    accountNumber: "1002-123-456789",
-    status: "approved",
-  },
-  {
-    id: 4,
-    memberName: "이미영",
-    memberType: "funeral",
-    company: "천국장례식장",
-    requestDate: "2025-06-14",
-    amount: 30000,
-    bankName: "하나은행",
-    accountNumber: "123-456789-01",
-    status: "rejected",
-  },
-];
-
 export default function RefundRequestPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useRefundRequests()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState<RefundRequest[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 필터링 및 검색 로직
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await cashAPI.getAllRefundRequests(filterType);
+        console.log("🚀 ~ fetchData ~ result:", result)
+        // managers, funerals 배열을 합쳐서 RefundRequest[] 형태로 변환
+        const managers = (result.data.managers || []).map((item: any) => ({
+          id: item.id,
+          memberName: item.memberName,
+          memberType: "manager",
+          company: item.company,
+          requestDate: item.requestDate,
+          amount: item.amount,
+          bankName: item.bankName,
+          accountNumber: item.accountNumber,
+          status: item.status,
+        }));
+        const funerals = (result.data.funerals || []).map((item: any) => ({
+          id: item.id,
+          memberName: item.memberName,
+          memberType: "funeral",
+          company: item.company,
+          requestDate: item.requestDate,
+          amount: item.amount,
+          bankName: item.bankName,
+          accountNumber: item.accountNumber,
+          status: item.status,
+        }));
+        setData([...managers, ...funerals]);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [filterType]);
+
   const filteredData = data.filter((item) => {
     const matchesSearch =
-      item.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || item.memberType === filterType;
-    return matchesSearch && matchesType;
+      item.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.company?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
   // TODO: API 도입 시 useMutation으로 변경
   // const approveMutation = useApproveRefund()
-  const handleApprove = (id: number) => {
-    console.log(`환급 승인 요청: ${id}`);
-    // TODO: 환급 승인 API 호출
-    // approveMutation.mutate(id, {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries(['refund-requests'])
-    //   }
-    // })
-    // 승인 후 상태 변경
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "approved" as const } : item
-      )
-    );
+  const handleApprove = async (id: number, type: "manager" | "funeral") => {
+    try {
+      await cashAPI.processRefundApproval({ type, requestId: id, action: "approve" });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: "approved" as const } : item
+        )
+      );
+    } catch (e) {
+      alert("환급 승인 처리에 실패했습니다.");
+    }
   };
 
   // TODO: API 도입 시 useMutation으로 변경
   // const rejectMutation = useRejectRefund()
-  const handleReject = (id: number) => {
-    console.log(`환급 거절 요청: ${id}`);
-    // TODO: 환급 거절 API 호출
-    // rejectMutation.mutate(id, {
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries(['refund-requests'])
-    //   }
-    // })
-    // 거절 후 상태 변경
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: "rejected" as const } : item
-      )
-    );
+  const handleReject = async (id: number, type: "manager" | "funeral") => {
+    try {
+      await cashAPI.processRefundApproval({ type, requestId: id, action: "reject" });
+      setData((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: "rejected" as const } : item
+        )
+      );
+    } catch (e) {
+      alert("환급 거절 처리에 실패했습니다.");
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -166,6 +146,9 @@ export default function RefundRequestPage() {
 
   const canApprove = (status: string) => status === "pending";
   const canReject = (status: string) => status === "pending";
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>에러: {error}</div>;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
@@ -246,12 +229,12 @@ export default function RefundRequestPage() {
                         </MenubarTrigger>
                         <MenubarContent>
                           {canApprove(item.status) && (
-                            <MenubarItem onClick={() => handleApprove(item.id)}>
+                            <MenubarItem onClick={() => handleApprove(item.id, item.memberType)}>
                               승인
                             </MenubarItem>
                           )}
                           {canReject(item.status) && (
-                            <MenubarItem onClick={() => handleReject(item.id)}>
+                            <MenubarItem onClick={() => handleReject(item.id, item.memberType)}>
                               거절
                             </MenubarItem>
                           )}

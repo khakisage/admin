@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CompanyMemberInfoCard from "@/components/company-member/CompanyMemberInfoCard";
 import CompanyMemberInfoCardSkeleton from "@/components/company-member/CompanyMemberInfoCardSkeleton";
 import CompanyMemberDetailTabs from "@/components/company-member/CompanyMemberDetailTabs";
@@ -21,21 +21,24 @@ function fetchMemberDetail(id: string) {
   });
 }
 
-export default function CompanyMemberDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function CompanyMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string | null>(null);
   const [member, setMember] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchMemberDetail(params.id)
-    fetchMemberDetail(params.id).then((data) => {
+    params.then((p) => setId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchMemberDetail(id).then((data) => {
       setMember(data);
       setLoading(false);
     });
-  }, [params.id]);
+  }, [id]);
+
+  if (!id) return null;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col items-center p-8 bg-white">
@@ -46,7 +49,7 @@ export default function CompanyMemberDetailPage({
           <CompanyMemberInfoCard member={member} />
         )}
         <div className="mt-8">
-          <CompanyMemberDetailTabs memberId={params.id} />
+          <CompanyMemberDetailTabs memberId={id} />
         </div>
       </div>
     </div>
