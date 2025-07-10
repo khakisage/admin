@@ -28,6 +28,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useState, useEffect } from "react";
 import { approvalAPI } from "@/lib/api";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface FuneralRequest {
   id: number;
@@ -235,7 +237,7 @@ export default function FuneralApprovalPage() {
                           {item.address}
                         </div>
                         <div className="min-w-[120px] text-xs text-gray-500">
-                          {item.createdAt}
+                          {format(new Date(item.createdAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
                         </div>
                       </div>
                       <Menubar>
@@ -351,7 +353,7 @@ export default function FuneralApprovalPage() {
                           {item.address}
                         </div>
                         <div className="min-w-[120px] text-xs text-gray-500">
-                          {item.createdAt}
+                          {format(new Date(item.createdAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
                         </div>
                       </div>
                       <Menubar>

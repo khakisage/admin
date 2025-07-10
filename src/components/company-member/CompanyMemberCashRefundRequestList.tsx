@@ -1,15 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "./CompanyMemberListSkeleton";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-} from "@/components/ui/menubar";
-import { MoreHorizontal } from "lucide-react";
 import { cashAPI } from "@/lib/api"; // API 모듈 경로 확인
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function CompanyMemberCashRefundRequestList({
   memberId,
@@ -32,14 +26,7 @@ export default function CompanyMemberCashRefundRequestList({
     });
   }, [memberId, memberType]);
 
-  const handleApprove = (id: number) => {
-    alert(`승인: ${id}`);
-    // TODO: 승인 API 연동
-  };
-  const handleReject = (id: number) => {
-    alert(`거절: ${id}`);
-    // TODO: 거절 API 연동
-  };
+
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -49,6 +36,8 @@ export default function CompanyMemberCashRefundRequestList({
         return <span className="text-red-500">거절</span>;
       case "pending":
         return <span className="text-yellow-500">대기중</span>;
+      case "requested":
+        return <span className="text-blue-500">요청</span>;
       default:
         return <span>{status}</span>;
     }
@@ -56,10 +45,13 @@ export default function CompanyMemberCashRefundRequestList({
 
   if (loading) return <CompanyMemberListSkeleton />;
 
+// "approved"만 제외한 리스트
+const filteredList = list?.filter(item => item.status !== "approved") ?? [];
+
   return (
     <div className="space-y-2">
-      {list && list.length > 0 ? (
-        list.map((item) => (
+      {filteredList && filteredList.length > 0 ? (
+        filteredList.map((item) => (
           <div
             key={item.refundRequestId}
             className="border rounded p-4 flex justify-between items-center"
@@ -74,12 +66,12 @@ export default function CompanyMemberCashRefundRequestList({
                 <div>{item.refundAmount.toLocaleString()}원</div>
               </div>
               <div className="flex justify-between">
-                <div>{item.updatedAt}</div>
+                <div>{format(new Date(item.createdAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}</div>
                 <div>{item.manager.managerBankNumber}</div>
               </div>
               <div className="text-right">{getStatusLabel(item.status)}</div>
             </div>
-            <Menubar>
+            {/* <Menubar>
               <MenubarMenu>
                 <MenubarTrigger asChild>
                   <button className="p-2 rounded hover:bg-gray-100">
@@ -95,7 +87,7 @@ export default function CompanyMemberCashRefundRequestList({
                   </MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
-            </Menubar>
+            </Menubar> */}
           </div>
         ))
       ) : (
