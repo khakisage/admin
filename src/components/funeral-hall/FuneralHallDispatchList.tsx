@@ -9,33 +9,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-function fetchDispatchList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          managerName: "홍길동",
-          dispatchDate: "2024-06-01T10:00:00",
-          address: "서울시 강남구 테헤란로 123",
-          familyPhone: "010-1234-5678",
-          managerPhone: "010-9999-8888",
-          emergencyPhone: "010-8765-4321",
-        },
-        {
-          id: 2,
-          managerName: "이영희",
-          dispatchDate: "2024-04-01T15:30:00",
-          address: "서울시 서초구 서초대로 456",
-          familyPhone: "010-2222-3333",
-          managerPhone: "010-7777-6666",
-          emergencyPhone: "010-4444-5555",
-        },
-      ]);
-    }, 1000);
-  });
-}
+import { dispatchAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -46,20 +20,26 @@ function isExpired(dateStr: string) {
 
 export default function FuneralHallDispatchList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchDispatchList(memberId)
-    fetchDispatchList(memberId).then((data) => {
-      setList(data);
+    // 실제 API 연동
+    dispatchAPI.getDispatchRequestsByUser(memberId, "funeral").then((response) => {
+      console.log("Fetched dispatch requests:", response.data); // Log the data
+      setList(response.data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching dispatch request list:", error);
       setLoading(false);
     });
-  }, [memberId]);
+  }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
 

@@ -21,7 +21,7 @@ import NoticeDetailDialog from "@/components/common/NoticeDetailDialog";
 import NoticeFormDialog from "@/components/common/NoticeFormDialog";
 
 import { useEffect, useState } from "react";
-import { noticeAPI } from "@/lib/api"; // 위에서 추가한 API import
+import { noticeAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 interface Notice {
   id: string; // UUID
@@ -32,6 +32,7 @@ interface Notice {
   updatedAt: string;
   isActive: boolean;
 }
+
 
 // TODO: API 도입 시 제거하고 useQuery로 대체
 // const { data, isLoading, error } = useNotices()
@@ -61,6 +62,7 @@ interface Notice {
 //     toast.error('공지사항 삭제에 실패했습니다.')
 //   }
 // }
+
 
 export default function NoticesPage() {
   const [data, setData] = useState<Notice[]>([]);
@@ -104,13 +106,15 @@ export default function NoticesPage() {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  const handleDelete = (id: string) => {
-    // TODO: API 도입 시 실제 삭제 API 호출
-    // deleteNotice(id)
-
-    // 더미데이터에서 삭제 (임시)
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("공지사항이 삭제되었습니다.");
+  const handleDelete = async (id: string) => {
+    try {
+      await noticeAPI.deleteNotice(id);
+      setData((prev) => prev.filter((item) => item.id !== id));
+      toast.success("공지사항이 삭제되었습니다.");
+    } catch (error) {
+      console.error("공지사항 삭제 실패:", error);
+      toast.error("공지사항 삭제에 실패했습니다.");
+    }
   };
 
   const handleEdit = (notice: Notice) => {

@@ -9,33 +9,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-function fetchEstimateRequestList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          managerName: "홍길동",
-          requestDate: "2024-06-01",
-          chiefName: "김철수",
-          mournerCount: 30,
-          checkInDate: "2024-06-02",
-          checkOutDate: "2024-06-04",
-        },
-        {
-          id: 2,
-          managerName: "이영희",
-          requestDate: "2024-05-20",
-          chiefName: "박민수",
-          mournerCount: 20,
-          checkInDate: "2024-05-21",
-          checkOutDate: "2024-05-23",
-        },
-      ]);
-    }, 1000);
-  });
-}
+import { estimateAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 export default function FuneralHallEstimateRequestList({
   memberId,
@@ -47,9 +21,13 @@ export default function FuneralHallEstimateRequestList({
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchEstimateRequestList(memberId)
-    fetchEstimateRequestList(memberId).then((data) => {
+    // 실제 API 연동
+    estimateAPI.getEstimateRequestList(memberId).then((data) => {
+      console.log("Fetched estimate requests:", data); // Log the data
       setList(data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching estimate request list:", error);
       setLoading(false);
     });
   }, [memberId]);

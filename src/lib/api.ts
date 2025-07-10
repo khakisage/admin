@@ -42,6 +42,17 @@ api.interceptors.response.use(
   }
 );
 
+// Add the new estimate API
+export const estimateAPI = {
+  getEstimateRequestList: async (memberId: string) => {
+    console.log("🚀 ~ getEstimateRequestList: ~ memberId:", memberId)
+    const response = await api.get(`/admin/form/list`, {
+      params: { funeralId: memberId },
+    });
+    return response.data;
+  },
+};
+
 // 관리자 로그인 API
 export const adminAuthAPI = {
   login: async (email: string, password: string) => {
@@ -182,8 +193,9 @@ export const cashAPI = {
 
   // 특정 상조팀장의 캐시 충전 내역 조회
   getManagerCashChargeHistoryById: async (memberId: string, memberType: string) => {
-    const response = await api.get(`/admin/refund/history/${memberId}?type=${memberType}`);
-    console.log("🚀 ~ getManagerCashChargeHistoryById ~ response:", response)
+
+    const response = await api.get(`/admin/cash/history/${memberId}?type=${memberType}`);
+
     return response.data;
   },
 
@@ -249,6 +261,11 @@ export const noticeAPI = {
       content,
       isVisible: isActive,
     });
+    return response.data;
+  },
+
+  deleteNotice: async (noticeId: string) => {
+    const response = await api.delete(`/admin/notice/delete/${noticeId}`);
     return response.data;
   },
 };
