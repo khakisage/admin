@@ -78,8 +78,6 @@ export default function RefundHistoryPage() {
       const result = await cashAPI.getRefundHistory(filterType);
       console.log("🚀 ~ fetchData ~ result:", result);
 
-      // data 배열을 RefundHistory[]로 변환
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const histories = (result.data || []).map((item: any) => ({
         id: item.refundRequestId || item.id,
         memberName: item.manager?.managerName || item.funeral?.funeralName || "",
@@ -89,10 +87,11 @@ export default function RefundHistoryPage() {
         amount: item.refundAmount,
         bankName: item.manager?.managerBankName || item.funeral?.funeralBankName || "",
         accountNumber: item.manager?.managerBankNumber || item.funeral?.funeralBankNumber || "",
-        status: item.status === "approved" ? "completed" as const : "failed" as const, // 필요시 status 매핑
+        status: item.status === "approved" ? "completed" as const : "failed" as const,
       }));
 
       setData(histories);
+      console.log("Mapped data:", histories);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
