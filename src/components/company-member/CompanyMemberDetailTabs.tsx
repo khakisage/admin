@@ -13,8 +13,10 @@ const TAB_LIST = [
 
 export default function CompanyMemberDetailTabs({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [tab, setTab] = useState("charge");
 
@@ -37,15 +39,15 @@ export default function CompanyMemberDetailTabs({
       </div>
       <div>
         {tab === "charge" && (
-          <CompanyMemberCashChargeList memberId={memberId} />
+          <CompanyMemberCashChargeList memberId={memberId} memberType={memberType} />
         )}
         {tab === "refundRequest" && (
-          <CompanyMemberCashRefundRequestList memberId={memberId} />
+          <CompanyMemberCashRefundRequestList memberId={memberId} memberType={memberType} />
         )}
         {tab === "refund" && (
-          <CompanyMemberCashRefundList memberId={memberId} />
+          <CompanyMemberCashRefundList memberId={memberId} memberType={memberType} />
         )}
-        {tab === "apply" && <CompanyMemberApplyList memberId={memberId} />}
+        {tab === "apply" && <CompanyMemberApplyList memberId={memberId} memberType={memberType} />}
       </div>
     </div>
   );

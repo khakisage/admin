@@ -70,20 +70,20 @@ const pointItems = [
   },
 ];
 
-const dispatchItems = [
-  {
-    title: "전체 출동 내역",
-    href: "/admin/dispatch/history",
-    description: "전체 출동 내역을 확인합니다.",
-    icon: Calendar,
-  },
-  {
-    title: "전체 거래 내역",
-    href: "/admin/transactions/history",
-    description: "전체 거래 내역을 확인합니다.",
-    icon: FileText,
-  },
-];
+// const dispatchItems = [
+//   {
+//     title: "전체 출동 내역",
+//     href: "/admin/dispatch/history",
+//     description: "전체 출동 내역을 확인합니다.",
+//     icon: Calendar,
+//   },
+//   {
+//     title: "전체 거래 내역",
+//     href: "/admin/transactions/history",
+//     description: "전체 거래 내역을 확인합니다.",
+//     icon: FileText,
+//   },
+// ];
 
 const memberItems = [
   {
@@ -156,7 +156,7 @@ export const AdminNavigationMenu = () => {
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
-
+{/* 
           <NavigationMenuItem>
             <NavigationMenuTrigger>출동/거래내역</NavigationMenuTrigger>
             <NavigationMenuContent>
@@ -173,7 +173,7 @@ export const AdminNavigationMenu = () => {
                 ))}
               </ul>
             </NavigationMenuContent>
-          </NavigationMenuItem>
+          </NavigationMenuItem> */}
 
           <NavigationMenuItem>
             <NavigationMenuTrigger>회원 관리</NavigationMenuTrigger>

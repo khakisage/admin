@@ -30,8 +30,8 @@ export default function CompanyMemberInfoCard({
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500">이메일</div>
-            <div className="font-medium">{member.email}</div>
+            <div className="text-xs text-gray-500">아이디</div>
+            <div className="font-medium">{member.username}</div>
           </div>
           <div>
             <div className="text-xs text-gray-500">포인트</div>

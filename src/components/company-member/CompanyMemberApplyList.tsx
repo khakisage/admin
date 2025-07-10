@@ -10,35 +10,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-function fetchApplyList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          date: "2024-05-10",
-          desc: "출동 신청 - 장례식장 A",
-          status: "완료",
-          chiefName: "홍길동",
-          deceasedName: "김철수",
-          chiefPhone: "010-1234-5678",
-          emergencyPhone: "010-8765-4321",
-        },
-        {
-          id: 2,
-          date: "2024-04-01",
-          desc: "출동 신청 - 장례식장 B",
-          status: "취소",
-          chiefName: "이영희",
-          deceasedName: "박민수",
-          chiefPhone: "010-2222-3333",
-          emergencyPhone: "010-4444-5555",
-        },
-      ]);
-    }, 1000);
-  });
-}
+import { dispatchAPI } from "@/lib/api"; // API 모듈 경로 확인
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -49,20 +21,25 @@ function isExpired(dateStr: string) {
 
 export default function CompanyMemberApplyList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchApplyList(memberId)
-    fetchApplyList(memberId).then((data) => {
-      setList(data);
+    dispatchAPI.getDispatchRequestsByUser(memberId, memberType).then((response) => {
+      console.log("Fetched dispatch requests:", response.data); // 데이터 확인
+      setList(response.data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching dispatch request list:", error);
       setLoading(false);
     });
-  }, [memberId]);
+  }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
 

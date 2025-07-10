@@ -125,6 +125,19 @@ export const userAPI = {
     const response = await api.get("/admin/user/userList?type=all");
     return response.data;
   },
+
+  getUserDetail: async (userId: string, userType: string) => {
+    // 첨부한 API에 맞게 type=manager 쿼리 포함
+    let response;
+    if (userType === "manager") {
+      response = await api.get(`/admin/user/search/${userId}?type=manager`);
+    } else if (userType === "funeral") {
+      response = await api.get(`/admin/user/search/${userId}?type=funeral`);
+    } else {
+      response = await api.get(`/admin/user/search/${userId}?type=all`);
+    }
+    return response.data;
+  },
 };
 
 // 캐시 지급 API
@@ -142,7 +155,7 @@ export const cashAPI = {
     return response.data;
   },
   getAllRefundRequests: async (type: string = "all") => {
-    const response = await api.get(`/admin/cash/all/refund?type=${type}`);
+    const response = await api.get(`/admin/refund/all/refund?type=${type}`);
     return response.data;
   },
 
@@ -156,14 +169,32 @@ export const cashAPI = {
     requestId: number;
     action: "approve" | "reject";
   }) => {
-    const response = await api.patch(`/admin/cash/${type}/${requestId}`, {
+    const response = await api.patch(`/admin/refund/${type}/${requestId}`, {
       action,
     });
     return response.data;
   },
 
   getRefundHistory: async (type: string = "all") => {
-    const response = await api.get(`/admin/cash/refund/history?type=${type}`);
+    const response = await api.get(`/admin/refund/refund/history?type=${type}`);
+    return response.data;
+  },
+
+  // 특정 상조팀장의 캐시 충전 내역 조회
+  getManagerCashChargeHistoryById: async (memberId: string, memberType: string) => {
+    const response = await api.get(`/admin/refund/history/${memberId}?type=${memberType}`);
+    return response.data;
+  },
+
+  // 특정 유저의 환급 신청 내역 조회
+  getRefundRequestByUserId: async (userId: string, type: string) => {
+    const response = await api.get(`/admin/refund/list/refund/${userId}?type=${type}`);
+    return response.data;
+  },
+
+  // 특정 유저의 승인된 환급 신청 내역 조회
+  getApprovedRefundRequestsByUserId: async (userId: string, type: string) => {
+    const response = await api.get(`/admin/refund/approved/list/${userId}?type=${type}`);
     return response.data;
   },
 };
@@ -175,7 +206,7 @@ export const noticeAPI = {
     const query = new URLSearchParams();
     if (params.userType) query.append("userType", params.userType);
     if (typeof params.isVisible === "boolean") query.append("isVisible", String(params.isVisible));
-    const response = await api.get(`/admin/notices/list?${query.toString()}`);
+    const response = await api.get(`/admin/notice/list?${query.toString()}`);
     return response.data;
   },
 
@@ -212,11 +243,19 @@ export const noticeAPI = {
     content: string;
     isActive: boolean;
   }) => {
-    const response = await api.patch(`/admin/notices/update/${id}`, {
+    const response = await api.patch(`/admin/notice/update/${id}`, {
       title,
       content,
       isVisible: isActive,
     });
+    return response.data;
+  },
+};
+
+// Dispatch Request API
+export const dispatchAPI = {
+  getDispatchRequestsByUser: async (userId: string, userType: string) => {
+    const response = await api.get(`/admin/dispatch/user/dispatch/requests?userId=${userId}&userType=${userType}`);
     return response.data;
   },
 };
