@@ -45,9 +45,9 @@ const approvalItems = [
 
 const pointItems = [
   {
-    title: "포인트/캐시 지급 페이지",
+    title: "캐시 지급 페이지",
     href: "/admin/point-cash/issue",
-    description: "포인트/캐시를 지급합니다.",
+    description: "캐시를 지급합니다.",
     icon: Coins,
   },
   {

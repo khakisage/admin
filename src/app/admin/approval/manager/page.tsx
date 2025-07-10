@@ -133,9 +133,13 @@ export default function ManagerApprovalPage() {
 
   const handleApprove = async (id: number) => {
     try {
-      await approvalAPI.setManagerApproval(id, true);
+      await approvalAPI.setManagerApproval(id.toString(), true);
       setRequestList((prev) => prev.filter((item) => item.id !== id));
-      // 필요하다면 승인 리스트로 이동 처리도 가능
+      // 승인된 요청을 approvedList로 이동
+      const approvedItem = requestList.find((item) => item.id === id);
+      if (approvedItem) {
+        setApprovedList((prev) => [...prev, approvedItem]);
+      }
     } catch (e) {
       alert("승인 처리에 실패했습니다.");
     }
@@ -209,7 +213,7 @@ export default function ManagerApprovalPage() {
         <CardHeader className="flex-shrink-0">
           <CardTitle>팀장 가입 요청 목록</CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 overflow-auto p-0">
+        <CardContent className="flex-1 overflow-auto py-4">
           <h2 className="font-bold mb-2">가입 대기중인 팀장</h2>
           {requestList.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
@@ -253,8 +257,8 @@ export default function ManagerApprovalPage() {
                               첨부파일 보기
                             </MenubarItem>
                           }
+                          images={item.images}
                           files={fileData ? fileData.files : []}
-                          loading={fileLoading}
                         />
                         <MenubarItem onClick={() => handleApprove(item.id)}>
                           승인
@@ -375,8 +379,8 @@ export default function ManagerApprovalPage() {
                               첨부파일 보기
                             </MenubarItem>
                           }
+                          images={item.images}
                           files={fileData ? fileData.files : []}
-                          loading={fileLoading}
                         />
                       </MenubarContent>
                     </MenubarMenu>
