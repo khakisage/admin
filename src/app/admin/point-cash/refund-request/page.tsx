@@ -74,7 +74,11 @@ export default function RefundRequestPage() {
     const matchesSearch =
       item.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    
+    // 승인된 항목은 UI에서 숨김 (대기중, 거절됨만 표시)
+    const isNotApproved = item.status !== "approved";
+    
+    return matchesSearch && isNotApproved;
   });
 
   // 체크박스 관련 함수들
