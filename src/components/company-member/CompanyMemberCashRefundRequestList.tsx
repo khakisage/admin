@@ -17,7 +17,7 @@ export default function CompanyMemberCashRefundRequestList({
 
   useEffect(() => {
     cashAPI.getRefundRequestByUserId(memberId, memberType).then((response) => {
-      console.log("Fetched refund requests:", response.data.refundRequests); // 데이터 확인
+      // console.log("Fetched refund requests:", response.data.refundRequests); // 데이터 확인
       setList(response.data.refundRequests);
       setLoading(false);
     }).catch((error) => {

@@ -32,7 +32,7 @@ export default function FuneralHallDispatchList({
   useEffect(() => {
     // 실제 API 연동
     dispatchAPI.getDispatchRequestsByUser(memberId, "funeral").then((response) => {
-      console.log("Fetched dispatch requests:", response.data); // Log the data
+      // console.log("Fetched dispatch requests:", response.data); // Log the data
       setList(response.data);
       setLoading(false);
     }).catch((error) => {

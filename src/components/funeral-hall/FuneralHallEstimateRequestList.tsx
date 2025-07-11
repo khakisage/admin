@@ -24,7 +24,7 @@ export default function FuneralHallEstimateRequestList({
     estimateAPI
       .getEstimateRequestList(memberId)
       .then((response) => {
-        console.log("Fetched estimate requests:", response);
+        // console.log("Fetched estimate requests:", response);
         setList(response.data); // Access the data array
         setLoading(false);
       })

@@ -23,7 +23,7 @@ export default function FuneralHallCashRefundRequestList({
 
   useEffect(() => {
     cashAPI.getRefundRequestByUserId(memberId, "funeral").then((response) => {
-      console.log("Fetched refund requests:", response.data.refundRequests); // Log the data
+      // console.log("Fetched refund requests:", response.data.refundRequests); // Log the data
       setList(response.data.refundRequests);
       setLoading(false);
     }).catch((error) => {

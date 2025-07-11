@@ -37,7 +37,7 @@ export default function ChargeHistoryPage() {
       try {
         setLoading(true);
         const result = await cashAPI.getAllCashChargeHistory();
-        console.log("🚀 ~ getAllCashChargeHistory ~ result:", result)
+        // console.log("🚀 ~ getAllCashChargeHistory ~ result:", result)
         // managers, funerals 배열을 합쳐서 ChargeHistory[] 형태로 변환
         const managers = (result.data.managers || []).map((item: any) => ({
           id: item.id,

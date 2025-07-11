@@ -41,7 +41,7 @@ export default function RefundRequestPage() {
       try {
         setLoading(true);
         const result = await cashAPI.getAllRefundRequests(filterType);
-        console.log("🚀 ~ fetchData ~ result:", result);
+        // console.log("🚀 ~ fetchData ~ result:", result);
 
         // approved, rejected, requested 배열을 합쳐서 RefundRequest[] 형태로 변환
         const toRefundRequest = (item: any, status: "pending" | "approved" | "rejected" | "completed"): RefundRequest => ({
