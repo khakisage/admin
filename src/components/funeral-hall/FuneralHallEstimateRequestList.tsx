@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { estimateAPI } from "@/lib/api"; // Ensure the correct path to your API module
+import { estimateAPI } from "@/lib/api";
 
 export default function FuneralHallEstimateRequestList({
   memberId,
@@ -21,15 +21,17 @@ export default function FuneralHallEstimateRequestList({
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // 실제 API 연동
-    estimateAPI.getEstimateRequestList(memberId).then((data) => {
-      console.log("Fetched estimate requests:", data); // Log the data
-      setList(data);
-      setLoading(false);
-    }).catch((error) => {
-      console.error("Error fetching estimate request list:", error);
-      setLoading(false);
-    });
+    estimateAPI
+      .getEstimateRequestList(memberId)
+      .then((response) => {
+        console.log("Fetched estimate requests:", response);
+        setList(response.data); // Access the data array
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching estimate request list:", error);
+        setLoading(false);
+      });
   }, [memberId]);
 
   if (loading) return <CompanyMemberListSkeleton />;
@@ -37,18 +39,18 @@ export default function FuneralHallEstimateRequestList({
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (
-        list.map((item) => (
+        list.map((item, index) => (
           <div
-            key={item.id}
+            key={index}
             className="border rounded p-4 flex justify-between items-center"
           >
             <div className="flex gap-8 items-center flex-1">
-              <div className="font-semibold">{item.managerName}</div>
-              <div>{item.requestDate}</div>
+              <div className="font-semibold">{item.managerForm.chiefMournerName}</div>
+              <div>{item.bidSubmittedAt}</div>
             </div>
             <Dialog
-              open={openId === item.id}
-              onOpenChange={(open) => setOpenId(open ? item.id : null)}
+              open={openId === index}
+              onOpenChange={(open) => setOpenId(open ? index : null)}
             >
               <DialogTrigger asChild>
                 <button className="px-4 py-2 rounded bg-blue-50 hover:bg-blue-100 border text-blue-700 font-medium">
@@ -59,25 +61,25 @@ export default function FuneralHallEstimateRequestList({
                 <DialogHeader>
                   <DialogTitle>견적 신청 상세 정보</DialogTitle>
                   <DialogDescription>
-                    신청일: {item.requestDate}
+                    신청일: {item.bidSubmittedAt}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="mt-4 space-y-2">
                   <div>
                     <span className="font-semibold">상주 이름: </span>
-                    {item.chiefName}
+                    {item.managerForm.chiefMournerName}
                   </div>
                   <div>
-                    <span className="font-semibold">조문객 수: </span>
-                    {item.mournerCount}
+                    <span className="font-semibold">상태: </span>
+                    {item.bidStatus}
                   </div>
                   <div>
-                    <span className="font-semibold">입실일자: </span>
-                    {item.checkInDate}
+                    <span className="font-semibold">신청 ID: </span>
+                    {item.managerFormBidId}
                   </div>
                   <div>
-                    <span className="font-semibold">퇴실일자: </span>
-                    {item.checkOutDate}
+                    <span className="font-semibold">생성일: </span>
+                    {item.managerFormCreatedAt}
                   </div>
                 </div>
               </DialogContent>

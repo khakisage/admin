@@ -10,7 +10,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { dispatchAPI } from "@/lib/api"; // API 모듈 경로 확인
+import { dispatchAPI } from "@/lib/api";
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -31,14 +31,17 @@ export default function CompanyMemberApplyList({
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    dispatchAPI.getDispatchRequestsByUser(memberId, memberType).then((response) => {
-      console.log("Fetched dispatch requests:", response.data); // 데이터 확인
-      setList(response.data);
-      setLoading(false);
-    }).catch((error) => {
-      console.error("Error fetching dispatch request list:", error);
-      setLoading(false);
-    });
+    dispatchAPI
+      .getDispatchRequestsByUser(memberId, memberType)
+      .then((response) => {
+        console.log("Fetched dispatch requests:", response.data);
+        setList(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching dispatch request list:", error);
+        setLoading(false);
+      });
   }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
@@ -46,25 +49,25 @@ export default function CompanyMemberApplyList({
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (
-        list.map((item) => {
-          const expired = isExpired(item.date);
+        list.map((item, index) => {
+          const expired = isExpired(item.createdAt);
           return (
             <div
-              key={item.id}
+              key={index}
               className="border rounded p-4 flex justify-between items-center"
             >
               <div className="flex gap-8 items-center flex-1">
-                <div>{item.date}</div>
-                <div>{item.desc}</div>
+                <div>{item.createdAt}</div>
+                <div>{item.address}</div>
                 <Badge
-                  variant={item.status === "완료" ? "default" : "secondary"}
+                  variant={item.isApproved === "completed" ? "default" : "secondary"}
                 >
-                  {item.status}
+                  {item.isApproved}
                 </Badge>
               </div>
               <Dialog
-                open={openId === item.id}
-                onOpenChange={(open) => setOpenId(open ? item.id : null)}
+                open={openId === index}
+                onOpenChange={(open) => setOpenId(open ? index : null)}
               >
                 <DialogTrigger asChild>
                   <button className="px-4 py-2 rounded bg-blue-50 hover:bg-blue-100 border text-blue-700 font-medium">
@@ -74,16 +77,16 @@ export default function CompanyMemberApplyList({
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>출동 신청 상세 정보</DialogTitle>
-                    <DialogDescription>신청일: {item.date}</DialogDescription>
+                    <DialogDescription>신청일: {item.createdAt}</DialogDescription>
                   </DialogHeader>
                   <div className="mt-4 space-y-2">
                     <div>
                       <span className="font-semibold">상주 이름: </span>
-                      {item.chiefName}
+                      {item.managerForm?.chiefMournerName || "정보 없음"}
                     </div>
                     <div>
                       <span className="font-semibold">고인 이름: </span>
-                      {item.deceasedName}
+                      {item.funeralId || "정보 없음"}
                     </div>
                     <div>
                       <span className="font-semibold">상주 전화번호: </span>
@@ -92,7 +95,7 @@ export default function CompanyMemberApplyList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.chiefPhone
+                        item.managerPhoneNumber || "정보 없음"
                       )}
                     </div>
                     <div>
@@ -102,7 +105,7 @@ export default function CompanyMemberApplyList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.emergencyPhone
+                        item.emergencyPhoneNumber || "정보 없음"
                       )}
                     </div>
                   </div>
