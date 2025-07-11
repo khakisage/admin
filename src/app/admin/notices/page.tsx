@@ -22,6 +22,11 @@ import NoticeFormDialog from "@/components/common/NoticeFormDialog";
 
 import { useEffect, useState } from "react";
 import { noticeAPI } from "@/lib/api"; // 위에서 추가한 API import
+import { useNoticeList } from "@/lib/server-state/query";
+import { useCreateNotice, useUpdateNotice } from "@/lib/server-state/mutation";
+import { INotice } from "@/lib/types/interface";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface Notice {
   id: string; // UUID
@@ -33,66 +38,46 @@ interface Notice {
   isActive: boolean;
 }
 
-// TODO: API 도입 시 제거하고 useQuery로 대체
-// const { data, isLoading, error } = useNotices()
-// API 엔드포인트: GET /api/admin/notices
-// const useNotices = () => {
-//   return useQuery({
-//     queryKey: ['notices'],
-//     queryFn: async () => {
-//       const response = await fetch('/api/admin/notices')
-//       if (!response.ok) {
-//         throw new Error('공지사항 목록 조회 실패')
-//       }
-//       const data = await response.json()
-//       return data.data
-//     }
-//   })
-// }
-
-// TODO: API 도입 시 useMutation으로 변경
-// const deleteMutation = useDeleteNotice()
-// const deleteNotice = async (id: number) => {
-//   try {
-//     await deleteMutation.mutateAsync(id)
-//     toast.success('공지사항이 삭제되었습니다.')
-//     queryClient.invalidateQueries(['notices'])
-//   } catch (error) {
-//     toast.error('공지사항 삭제에 실패했습니다.')
-//   }
-// }
-
 export default function NoticesPage() {
   const [data, setData] = useState<Notice[]>([]);
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // 공지사항 목록 조회
+  const {data: notices = []} = useNoticeList(userTypeFilter === 'all' ? undefined : userTypeFilter);
+  
+  // 공지사항 등록
+  const createNotice = useCreateNotice();
+  // 공지사항 수정
+  const updateNotice = useUpdateNotice();
+  
+  // console.log('🚀 ~ NoticesPage ~ notices:', notices)
+  // const fetchNotices = () => {
+  //   noticeAPI
+  //     .getNoticeList({ userType: userTypeFilter === "all" ? undefined : userTypeFilter })
+  //     .then((res) => {
+  //       const notices = res.data.map((item: any) => ({
+  //         id: item.noticeId,
+  //         title: item.title,
+  //         content: item.content,
+  //         userType: item.userType,
+  //         createdAt: item.createdAt.replace("T", " ").slice(0, 19),
+  //         updatedAt: item.updatedAt.replace("T", " ").slice(0, 19),
+  //         isActive: item.isVisible,
+  //       }));
+  //       setData(notices);
+  //     })
+  //     .catch(() => setData([]));
+  // };
 
-  const fetchNotices = () => {
-    noticeAPI
-      .getNoticeList({ userType: userTypeFilter === "all" ? undefined : userTypeFilter })
-      .then((res) => {
-        const notices = res.data.map((item: any) => ({
-          id: item.noticeId,
-          title: item.title,
-          content: item.content,
-          userType: item.userType,
-          createdAt: item.createdAt.replace("T", " ").slice(0, 19),
-          updatedAt: item.updatedAt.replace("T", " ").slice(0, 19),
-          isActive: item.isVisible,
-        }));
-        setData(notices);
-      })
-      .catch(() => setData([]));
-  };
-
-  useEffect(() => {
-    fetchNotices();
-  }, [userTypeFilter]);
+  // useEffect(() => {
+  //   fetchNotices();
+  // }, [userTypeFilter]);
 
   // 필터링 및 정렬 로직
-  const filteredAndSortedData = data
+  const filteredAndSortedData = notices
     .filter((item) => {
       const matchesUserType =
         userTypeFilter === "all" || item.userType === userTypeFilter;
@@ -127,44 +112,62 @@ export default function NoticesPage() {
   }) => {
     try {
       if (data.id) {
-        // 수정 로직
-        setData((prev) =>
-          prev.map((item) =>
-            item.id === data.id
-              ? {
-                  ...item,
-                  title: data.title,
-                  content: data.content,
-                  userType: data.userType,
-                  isActive: data.isActive,
-                  updatedAt: new Date()
-                    .toISOString()
-                    .replace("T", " ")
-                    .slice(0, 19),
-                }
-              : item
-          )
-        );
+        await updateNotice.mutateAsync({
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          isActive: data.isActive,
+        });
         toast.success("공지사항이 수정되었습니다.");
-        fetchNotices(); // 목록 갱신!
-        setIsEditDialogOpen(false);
-        setEditingNotice(null);
       } else {
-        // 신규 등록 로직
-        const newNotice: Notice = {
-          id: Math.max(...data.map((item: Notice) => item.id)) + 1,
+        await createNotice.mutateAsync({
           title: data.title,
           content: data.content,
           userType: data.userType,
           isActive: data.isActive,
-          createdAt: new Date().toISOString().replace("T", " ").slice(0, 19),
-          updatedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
-        };
-        setData((prev) => [newNotice, ...prev]);
-        fetchNotices(); // 목록 갱신!
+        });
         toast.success("공지사항이 등록되었습니다.");
-
       }
+      setIsEditDialogOpen(false);
+      setEditingNotice(null);
+      //   // 수정 로직
+      //   setData((prev) =>
+      //     prev.map((item) =>
+      //       item.id === data.id
+      //         ? {
+      //             ...item,
+      //             title: data.title,
+      //             content: data.content,
+      //             userType: data.userType,
+      //             isActive: data.isActive,
+      //             updatedAt: new Date()
+      //               .toISOString()
+      //               .replace("T", " ")
+      //               .slice(0, 19),
+      //           }
+      //         : item
+      //     )
+      //   );
+      //   toast.success("공지사항이 수정되었습니다.");
+      //   fetchNotices(); // 목록 갱신!
+      //   setIsEditDialogOpen(false);
+      //   setEditingNotice(null);
+      // } else {
+      //   // 신규 등록 로직
+      //   const newNotice: Notice = {
+      //     id: Math.max(...data.map((item: Notice) => item.id)) + 1,
+      //     title: data.title,
+      //     content: data.content,
+      //     userType: data.userType,
+      //     isActive: data.isActive,
+      //     createdAt: new Date().toISOString().replace("T", " ").slice(0, 19),
+      //     updatedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
+      //   };
+      //   setData((prev) => [newNotice, ...prev]);
+      //   fetchNotices(); // 목록 갱신!
+      //   toast.success("공지사항이 등록되었습니다.");
+
+      
     } catch (error) {
       console.error("공지사항 저장 실패:", error);
       toast.error("공지사항 저장에 실패했습니다.");
@@ -243,7 +246,13 @@ export default function NoticesPage() {
               <NoticeFormDialog
                 trigger={<Button>신규 공지사항 등록</Button>}
                 mode="create"
-                onSubmit={handleSubmitNotice}
+                onSubmit={(data) => {
+                  const { id, ...rest } = data;
+                  handleSubmitNotice({
+                    ...rest,
+                    id: id?.toString()
+                  });
+                }}
               />
             </div>
           </div>
@@ -255,9 +264,9 @@ export default function NoticesPage() {
                 공지사항이 없습니다.
               </div>
             ) : (
-              filteredAndSortedData.map((item) => (
+              filteredAndSortedData.map((item: INotice) => (
                 <div
-                  key={item.id}
+                  key={item.noticeId}
                   className="flex justify-between items-center border p-4 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center space-x-8 flex-1">
@@ -282,17 +291,17 @@ export default function NoticesPage() {
                       {getUserTypeText(item.userType)}
                     </div>
                     <div className="min-w-[120px] text-sm text-muted-foreground">
-                      {item.createdAt.split(" ")[0]}
+                      {format(new Date(item.createdAt), "yyyy년 MM월 dd일", { locale: ko })}
                     </div>
-                    <div className="min-w-[120px] text-sm text-muted-foreground">
-                      {item.updatedAt.split(" ")[0]}
-                    </div>
+                    {/* <div className="min-w-[120px] text-sm text-muted-foreground">
+                      {format(new Date(item.updatedAt), "yyyy년 MM월 dd일", { locale: ko })}
+                    </div> */}
                     <div
                       className={`min-w-[80px] text-sm font-medium ${
-                        item.isActive ? "text-green-600" : "text-red-600"
+                        item.isVisible ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {item.isActive ? "활성" : "비활성"}
+                      {item.isVisible ? "활성" : "비활성"}
                     </div>
                   </div>
                   <Menubar>

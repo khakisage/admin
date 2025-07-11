@@ -10,18 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { INotice } from "@/lib/types/interface";
 
 interface NoticeDetailDialogProps {
   trigger: React.ReactNode;
-  notice: {
-    id: number;
-    title: string;
-    content: string;
-    userType: "manager" | "funeral" | "all";
-    createdAt: string;
-    updatedAt: string;
-    isActive: boolean;
-  };
+  notice: INotice;
 }
 
 export default function NoticeDetailDialog({
@@ -78,8 +71,8 @@ export default function NoticeDetailDialog({
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <DialogTitle className="text-xl">{notice.title}</DialogTitle>
-            <Badge className={getStatusColor(notice.isActive)}>
-              {notice.isActive ? "활성" : "비활성"}
+            <Badge className={getStatusColor(notice.isVisible)}>
+              {notice.isVisible ? "활성" : "비활성"}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
