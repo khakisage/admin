@@ -11,6 +11,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { dispatchAPI } from "@/lib/api";
+import { ko } from "date-fns/locale";
+import { format } from "date-fns";
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -45,7 +47,7 @@ export default function CompanyMemberApplyList({
   }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
-
+  console.log('🚀 ~ CompanyMemberApplyList ~ list:', list)
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (
@@ -57,7 +59,7 @@ export default function CompanyMemberApplyList({
               className="border rounded p-4 flex justify-between items-center"
             >
               <div className="flex gap-8 items-center flex-1">
-                <div>{item.createdAt}</div>
+                <div>{format(new Date(item.createdAt), "yyyy년 MM월 dd일", { locale: ko })}</div>
                 <div>{item.address}</div>
                 <Badge
                   variant={item.isApproved === "completed" ? "default" : "secondary"}
@@ -77,19 +79,19 @@ export default function CompanyMemberApplyList({
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>출동 신청 상세 정보</DialogTitle>
-                    <DialogDescription>신청일: {item.createdAt}</DialogDescription>
+                    <DialogDescription>신청일: {format(new Date(item.createdAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}</DialogDescription>
                   </DialogHeader>
                   <div className="mt-4 space-y-2">
                     <div>
-                      <span className="font-semibold">상주 이름: </span>
-                      {item.managerForm?.chiefMournerName || "정보 없음"}
+                      <span className="font-semibold">주소: </span>
+                      {item.address || "정보 없음"}
                     </div>
-                    <div>
+                    {/* <div>
                       <span className="font-semibold">고인 이름: </span>
                       {item.funeralId || "정보 없음"}
-                    </div>
+                    </div> */}
                     <div>
-                      <span className="font-semibold">상주 전화번호: </span>
+                      <span className="font-semibold">상조팀장 전화번호: </span>
                       {expired ? (
                         <span className="text-gray-400">
                           저장기간 만료로 삭제됨
@@ -98,7 +100,7 @@ export default function CompanyMemberApplyList({
                         item.managerPhoneNumber || "정보 없음"
                       )}
                     </div>
-                    <div>
+                    {/* <div>
                       <span className="font-semibold">비상 전화번호: </span>
                       {expired ? (
                         <span className="text-gray-400">
@@ -107,7 +109,7 @@ export default function CompanyMemberApplyList({
                       ) : (
                         item.emergencyPhoneNumber || "정보 없음"
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 </DialogContent>
               </Dialog>
