@@ -27,10 +27,10 @@ export default function Home() {
             마음을 담아, <br />
             마지막 길을 함께합니다.
           </p>
-          <p className="text-white text-2xl font-medium text-center mt-12 drop-shadow-lg">
+          {/* <p className="text-white text-2xl font-medium text-center mt-12 drop-shadow-lg">
             도입문의 <br />
             <span className="font-bold text-center">010-1234-5678</span>
-          </p>
+          </p> */}
         </div>
       </div>
     </>
