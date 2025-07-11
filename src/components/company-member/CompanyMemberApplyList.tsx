@@ -36,7 +36,7 @@ export default function CompanyMemberApplyList({
     dispatchAPI
       .getDispatchRequestsByUser(memberId, memberType)
       .then((response) => {
-        console.log("Fetched dispatch requests:", response.data);
+        // console.log("Fetched dispatch requests:", response.data);
         setList(response.data);
         setLoading(false);
       })
@@ -47,7 +47,7 @@ export default function CompanyMemberApplyList({
   }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
-  console.log('🚀 ~ CompanyMemberApplyList ~ list:', list)
+  // console.log('🚀 ~ CompanyMemberApplyList ~ list:', list)
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (

@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "./CompanyMemberListSkeleton";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-} from "@/components/ui/menubar";
-import { MoreHorizontal } from "lucide-react";
+// import {
+//   Menubar,
+//   MenubarMenu,
+//   MenubarTrigger,
+//   MenubarContent,
+//   MenubarItem,
+// } from "@/components/ui/menubar";
+// import { MoreHorizontal } from "lucide-react";
 import { cashAPI } from "@/lib/api"; // API 모듈 경로 확인
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function CompanyMemberCashRefundList({
   memberId,
@@ -23,7 +25,7 @@ export default function CompanyMemberCashRefundList({
 
   useEffect(() => {
     cashAPI.getApprovedRefundRequestsByUserId(memberId, memberType).then((response) => {
-      console.log("Fetched approved refund requests:", response.data.refundRequests); // 데이터 확인
+      // console.log("Fetched approved refund requests:", response.data.refundRequests); // 데이터 확인
       setList(response.data.refundRequests);
       setLoading(false);
     }).catch((error) => {
@@ -63,7 +65,7 @@ export default function CompanyMemberCashRefundList({
                 <div>{item.refundAmount.toLocaleString()}원</div>
               </div>
               <div className="flex justify-between">
-                <div>{item.updatedAt}</div>
+                <div>{format(new Date(item.updatedAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}</div>
                 <div>{item.manager.managerBankNumber}</div>
               </div>
               <div className="text-right">{getStatusLabel(item.status)}</div>

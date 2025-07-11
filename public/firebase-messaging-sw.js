@@ -14,7 +14,7 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
-  console.log('[firebase-messaging-sw.js] Received background message:', payload);
+  // console.log('[firebase-messaging-sw.js] Received background message:', payload);
   
   const notificationTitle = payload.notification?.title || '새 알림';
   const notificationOptions = {
@@ -39,7 +39,7 @@ messaging.onBackgroundMessage(function (payload) {
 
 // 알림 클릭 처리
 self.addEventListener('notificationclick', function(event) {
-  console.log('알림 클릭:', event);
+  // console.log('알림 클릭:', event);
   event.notification.close();
 
   if (event.action === 'open') {

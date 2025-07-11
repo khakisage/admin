@@ -40,7 +40,7 @@ export default function CashIssuePage() {
       try {
         setLoading(true);
         const result = await userAPI.getUserList();
-        console.log("🚀 ~ fetchData ~ result:", result)
+        // console.log("🚀 ~ fetchData ~ result:", result)
         const users = [
           ...result.data.managers.map((manager: any) => ({
             id: manager.managerId,
@@ -74,7 +74,7 @@ export default function CashIssuePage() {
   const filteredData = data.filter((item) => {
     const memberName = item.memberType === "manager" ? item.memberName : item.memberName;
     const company = item.memberType === "manager" ? item.company : item.company;
-    console.log("🚀 ~ filteredData ~ item:", item)
+    // console.log("🚀 ~ filteredData ~ item:", item)
 
     const matchesSearch =
       (memberName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
@@ -88,7 +88,7 @@ export default function CashIssuePage() {
     amount: number;
     reason: string;
   }) => {
-    console.log("캐시 지급 요청:", issueData);
+    // console.log("캐시 지급 요청:", issueData);
 
     // 데이터 업데이트
     setData((prev) =>

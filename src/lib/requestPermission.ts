@@ -13,7 +13,7 @@ export async function requestNotificationPermission() {
   }
   try {
     const token = await getToken(messagingInstance, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID });
-    console.log('✅ FCM Token:', token);
+    // console.log('✅ FCM Token:', token);
     return token;
   } catch (err) {
     console.error('❌ FCM 토큰 발급 실패:', err);
