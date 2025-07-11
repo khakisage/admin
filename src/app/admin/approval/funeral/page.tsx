@@ -117,7 +117,7 @@ export default function FuneralApprovalPage() {
         setLoading(true);
         setError(null);
         const response = await approvalAPI.getFuneralRequests();
-        console.log("🚀 ~ fetchData ~ response:", response);
+        // console.log("🚀 ~ fetchData ~ response:", response);
 
         // approved(승인됨), requests(대기중) 분리
         const approvedData = response.data?.approved?.map((item: any) => ({
