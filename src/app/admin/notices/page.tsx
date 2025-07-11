@@ -20,10 +20,11 @@ import { toast } from "sonner";
 import NoticeDetailDialog from "@/components/common/NoticeDetailDialog";
 import NoticeFormDialog from "@/components/common/NoticeFormDialog";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { noticeAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 interface Notice {
-  id: number;
+  id: string; // UUID
   title: string;
   content: string;
   userType: "manager" | "funeral" | "all";
@@ -31,6 +32,7 @@ interface Notice {
   updatedAt: string;
   isActive: boolean;
 }
+
 
 // TODO: API 도입 시 제거하고 useQuery로 대체
 // const { data, isLoading, error } = useNotices()
@@ -61,59 +63,35 @@ interface Notice {
 //   }
 // }
 
-const dummyData: Notice[] = [
-  {
-    id: 1,
-    title: "시스템 점검 안내",
-    content:
-      "2025년 6월 20일 새벽 2시부터 4시까지 시스템 점검이 진행됩니다.\n\n점검 시간 동안 서비스 이용이 제한될 수 있으니 참고해 주시기 바랍니다.\n\n점검이 완료되면 정상적으로 서비스를 이용하실 수 있습니다.",
-    userType: "all",
-    createdAt: "2025-06-15 10:30:00",
-    updatedAt: "2025-06-15 10:30:00",
-    isActive: true,
-  },
-  {
-    id: 2,
-    title: "상조팀장 서비스 이용 안내",
-    content:
-      "상조팀장 서비스 이용 시 주의사항을 안내드립니다.\n\n1. 고객 정보 보호를 위해 개인정보 처리방침을 준수해 주세요.\n2. 서비스 이용료는 매월 1일에 자동으로 차감됩니다.\n3. 문의사항이 있으시면 고객센터로 연락해 주세요.",
-    userType: "manager",
-    createdAt: "2025-06-14 14:20:00",
-    updatedAt: "2025-06-16 09:15:00",
-    isActive: true,
-  },
-  {
-    id: 3,
-    title: "장례식장 서비스 이용 안내",
-    content:
-      "장례식장 서비스 이용 시 주의사항을 안내드립니다.\n\n1. 예약 변경은 24시간 전까지 가능합니다.\n2. 취소 시 수수료가 발생할 수 있습니다.\n3. 시설 이용 시 안전수칙을 준수해 주세요.",
-    userType: "funeral",
-    createdAt: "2025-06-13 09:15:00",
-    updatedAt: "2025-06-13 09:15:00",
-    isActive: true,
-  },
-  {
-    id: 4,
-    title: "서비스 이용료 변경 안내",
-    content:
-      "2025년 7월 1일부터 서비스 이용료가 변경됩니다.\n\n변경된 이용료:\n- 상조팀장: 월 50,000원 → 월 55,000원\n- 장례식장: 월 80,000원 → 월 85,000원\n\n기존 고객님들은 3개월간 기존 요금이 적용됩니다.",
-    userType: "all",
-    createdAt: "2025-06-12 16:45:00",
-    updatedAt: "2025-06-12 16:45:00",
-    isActive: false,
-  },
-];
 
 export default function NoticesPage() {
-  // TODO: API 도입 시 useState 제거하고 useQuery 사용
-  // const { data, isLoading, error } = useNotices()
-  // if (isLoading) return <LoadingSpinner />
-  // if (error) return <ErrorMessage error={error} />
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState<Notice[]>([]);
   const [userTypeFilter, setUserTypeFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const fetchNotices = () => {
+    noticeAPI
+      .getNoticeList({ userType: userTypeFilter === "all" ? undefined : userTypeFilter })
+      .then((res) => {
+        const notices = res.data.map((item: any) => ({
+          id: item.noticeId,
+          title: item.title,
+          content: item.content,
+          userType: item.userType,
+          createdAt: item.createdAt.replace("T", " ").slice(0, 19),
+          updatedAt: item.updatedAt.replace("T", " ").slice(0, 19),
+          isActive: item.isVisible,
+        }));
+        setData(notices);
+      })
+      .catch(() => setData([]));
+  };
+
+  useEffect(() => {
+    fetchNotices();
+  }, [userTypeFilter]);
 
   // 필터링 및 정렬 로직
   const filteredAndSortedData = data
@@ -128,13 +106,15 @@ export default function NoticesPage() {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  const handleDelete = (id: number) => {
-    // TODO: API 도입 시 실제 삭제 API 호출
-    // deleteNotice(id)
-
-    // 더미데이터에서 삭제 (임시)
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("공지사항이 삭제되었습니다.");
+  const handleDelete = async (id: string) => {
+    try {
+      await noticeAPI.deleteNotice(id);
+      setData((prev) => prev.filter((item) => item.id !== id));
+      toast.success("공지사항이 삭제되었습니다.");
+    } catch (error) {
+      console.error("공지사항 삭제 실패:", error);
+      toast.error("공지사항 삭제에 실패했습니다.");
+    }
   };
 
   const handleEdit = (notice: Notice) => {
@@ -143,7 +123,7 @@ export default function NoticesPage() {
   };
 
   const handleSubmitNotice = async (data: {
-    id?: number;
+    id?: string;
     title: string;
     content: string;
     userType: "manager" | "funeral" | "all";
@@ -170,12 +150,13 @@ export default function NoticesPage() {
           )
         );
         toast.success("공지사항이 수정되었습니다.");
+        fetchNotices(); // 목록 갱신!
         setIsEditDialogOpen(false);
         setEditingNotice(null);
       } else {
         // 신규 등록 로직
         const newNotice: Notice = {
-          id: Math.max(...dummyData.map((item: Notice) => item.id)) + 1,
+          id: Math.max(...data.map((item: Notice) => item.id)) + 1,
           title: data.title,
           content: data.content,
           userType: data.userType,
@@ -184,7 +165,9 @@ export default function NoticesPage() {
           updatedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
         };
         setData((prev) => [newNotice, ...prev]);
+        fetchNotices(); // 목록 갱신!
         toast.success("공지사항이 등록되었습니다.");
+
       }
     } catch (error) {
       console.error("공지사항 저장 실패:", error);

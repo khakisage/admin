@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "@/components/company-member/CompanyMemberListSkeleton";
+import { cashAPI } from "@/lib/api";
 
 function fetchFuneralHallCashChargeList(memberId: string) {
   return new Promise<any[]>((resolve) => {
@@ -22,9 +23,12 @@ export default function FuneralHallCashChargeList({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchFuneralHallCashChargeList(memberId)
-    fetchFuneralHallCashChargeList(memberId).then((data) => {
+    // 실제 API 연동
+    cashAPI.getManagerCashChargeHistoryById(memberId, "funeral").then((data) => {
       setList(data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching cash charge list:", error);
       setLoading(false);
     });
   }, [memberId]);

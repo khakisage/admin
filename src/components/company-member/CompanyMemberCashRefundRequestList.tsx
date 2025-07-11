@@ -1,67 +1,77 @@
 "use client";
 import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "./CompanyMemberListSkeleton";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-} from "@/components/ui/menubar";
-import { MoreHorizontal } from "lucide-react";
-
-function fetchCashRefundRequestList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, date: "2024-05-15", amount: 30000, status: "신청" },
-        { id: 2, date: "2024-04-30", amount: 50000, status: "완료" },
-      ]);
-    }, 1000);
-  });
-}
+import { cashAPI } from "@/lib/api"; // API 모듈 경로 확인
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function CompanyMemberCashRefundRequestList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchCashRefundRequestList(memberId)
-    fetchCashRefundRequestList(memberId).then((data) => {
-      setList(data);
+    cashAPI.getRefundRequestByUserId(memberId, memberType).then((response) => {
+      console.log("Fetched refund requests:", response.data.refundRequests); // 데이터 확인
+      setList(response.data.refundRequests);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching cash refund request list:", error);
       setLoading(false);
     });
-  }, [memberId]);
+  }, [memberId, memberType]);
 
-  const handleApprove = (id: number) => {
-    alert(`승인: ${id}`);
-    // TODO: 승인 API 연동
-  };
-  const handleReject = (id: number) => {
-    alert(`거절: ${id}`);
-    // TODO: 거절 API 연동
+
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <span className="text-green-500">승인</span>;
+      case "rejected":
+        return <span className="text-red-500">거절</span>;
+      case "pending":
+        return <span className="text-yellow-500">대기중</span>;
+      case "requested":
+        return <span className="text-blue-500">요청</span>;
+      default:
+        return <span>{status}</span>;
+    }
   };
 
   if (loading) return <CompanyMemberListSkeleton />;
 
+// "approved"만 제외한 리스트
+const filteredList = list?.filter(item => item.status !== "approved") ?? [];
+
   return (
     <div className="space-y-2">
-      {list && list.length > 0 ? (
-        list.map((item) => (
+      {filteredList && filteredList.length > 0 ? (
+        filteredList.map((item) => (
           <div
-            key={item.id}
+            key={item.refundRequestId}
             className="border rounded p-4 flex justify-between items-center"
           >
-            <div className="flex gap-8 items-center flex-1">
-              <div>{item.date}</div>
-              <div>{item.amount.toLocaleString()}원</div>
-              {/* 상태(status)는 UI에서 표시하지 않음 */}
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex justify-between">
+                <div className="font-bold">{item.manager.managerName}</div>
+                <div>{item.manager.managerBankName}</div>
+              </div>
+              <div className="flex justify-between">
+                <div>{item.manager.managerPhoneNumber}</div>
+                <div>{item.refundAmount.toLocaleString()}원</div>
+              </div>
+              <div className="flex justify-between">
+                <div>{format(new Date(item.createdAt), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}</div>
+                <div>{item.manager.managerBankNumber}</div>
+              </div>
+              <div className="text-right">{getStatusLabel(item.status)}</div>
             </div>
-            <Menubar>
+            {/* <Menubar>
               <MenubarMenu>
                 <MenubarTrigger asChild>
                   <button className="p-2 rounded hover:bg-gray-100">
@@ -69,15 +79,15 @@ export default function CompanyMemberCashRefundRequestList({
                   </button>
                 </MenubarTrigger>
                 <MenubarContent align="end">
-                  <MenubarItem onClick={() => handleApprove(item.id)}>
+                  <MenubarItem onClick={() => handleApprove(item.refundRequestId)}>
                     승인
                   </MenubarItem>
-                  <MenubarItem onClick={() => handleReject(item.id)}>
+                  <MenubarItem onClick={() => handleReject(item.refundRequestId)}>
                     거절
                   </MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
-            </Menubar>
+            </Menubar> */}
           </div>
         ))
       ) : (

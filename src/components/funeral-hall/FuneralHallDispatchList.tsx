@@ -9,33 +9,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-function fetchDispatchList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          managerName: "홍길동",
-          dispatchDate: "2024-06-01T10:00:00",
-          address: "서울시 강남구 테헤란로 123",
-          familyPhone: "010-1234-5678",
-          managerPhone: "010-9999-8888",
-          emergencyPhone: "010-8765-4321",
-        },
-        {
-          id: 2,
-          managerName: "이영희",
-          dispatchDate: "2024-04-01T15:30:00",
-          address: "서울시 서초구 서초대로 456",
-          familyPhone: "010-2222-3333",
-          managerPhone: "010-7777-6666",
-          emergencyPhone: "010-4444-5555",
-        },
-      ]);
-    }, 1000);
-  });
-}
+import { dispatchAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -46,20 +20,26 @@ function isExpired(dateStr: string) {
 
 export default function FuneralHallDispatchList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchDispatchList(memberId)
-    fetchDispatchList(memberId).then((data) => {
-      setList(data);
+    // 실제 API 연동
+    dispatchAPI.getDispatchRequestsByUser(memberId, "funeral").then((response) => {
+      console.log("Fetched dispatch requests:", response.data); // Log the data
+      setList(response.data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching dispatch request list:", error);
       setLoading(false);
     });
-  }, [memberId]);
+  }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
 
@@ -67,19 +47,19 @@ export default function FuneralHallDispatchList({
     <div className="space-y-2">
       {list && list.length > 0 ? (
         list.map((item) => {
-          const expired = isExpired(item.dispatchDate);
+          const expired = isExpired(item.createdAt); // createdAt 사용
           return (
             <div
-              key={item.id}
+              key={item.dispatchRequestId} // dispatchRequestId 사용
               className="border rounded p-4 flex justify-between items-center"
             >
               <div className="flex gap-8 items-center flex-1">
                 <div className="font-semibold">{item.managerName}</div>
-                <div>{item.dispatchDate.replace("T", " ")}</div>
+                <div>{item.createdAt ? item.createdAt.replace("T", " ") : "N/A"}</div>
               </div>
               <Dialog
-                open={openId === item.id}
-                onOpenChange={(open) => setOpenId(open ? item.id : null)}
+                open={openId === item.dispatchRequestId}
+                onOpenChange={(open) => setOpenId(open ? item.dispatchRequestId : null)}
               >
                 <DialogTrigger asChild>
                   <button className="px-4 py-2 rounded bg-blue-50 hover:bg-blue-100 border text-blue-700 font-medium">
@@ -90,7 +70,7 @@ export default function FuneralHallDispatchList({
                   <DialogHeader>
                     <DialogTitle>출동 상세 정보</DialogTitle>
                     <DialogDescription>
-                      출동 요청 시각: {item.dispatchDate.replace("T", " ")}
+                      출동 요청 시각: {item.createdAt ? item.createdAt.replace("T", " ") : "N/A"}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="mt-4 space-y-2">
@@ -111,12 +91,12 @@ export default function FuneralHallDispatchList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.familyPhone
+                        item.familyPhoneNumber
                       )}
                     </div>
                     <div>
                       <span className="font-semibold">팀장 연락처: </span>
-                      {item.managerPhone}
+                      {item.managerPhoneNumber}
                     </div>
                     <div>
                       <span className="font-semibold">비상 연락처: </span>
@@ -125,7 +105,7 @@ export default function FuneralHallDispatchList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.emergencyPhone
+                        item.emergencyPhoneNumber
                       )}
                     </div>
                   </div>

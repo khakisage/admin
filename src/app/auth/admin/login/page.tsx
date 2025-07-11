@@ -54,29 +54,31 @@ export default function Login() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // setIsLoading(true);
-    // setError(null);
+    setIsLoading(true);
+    setError(null);
 
-    // try {
-    //   const response = await adminAuthAPI.login(values.email, values.password);
+    try {
+      const response = await adminAuthAPI.login(values.email, values.password);
 
-    //   // 토큰 저장
-    //   localStorage.setItem("accessToken", response.accessToken);
-    //   localStorage.setItem("refreshToken", response.refreshToken);
+      // 토큰 저장
+      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
 
-    //   // 관리자 정보 저장 (필요한 경우)
-    //   localStorage.setItem("adminInfo", JSON.stringify(response.admin));
+      // 관리자 정보 저장 (필요한 경우)
+      localStorage.setItem("adminInfo", JSON.stringify(response.admin));
 
-    //   // 로그인 성공 시 관리자 대시보드로 이동
-    router.push("/admin");
-    // } catch (error: unknown) {
-    //   console.error("로그인 실패:", error);
-    //   const errorMessage =
-    //     error instanceof Error ? error.message : "로그인에 실패했습니다.";
-    //   setError(errorMessage);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      // 로그인 성공 시 관리자 대시보드로 이동
+      router.push("/admin");
+    } catch (error: any) {
+      // 백엔드 메시지 우선
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "로그인에 실패했습니다.";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -90,7 +92,14 @@ export default function Login() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-6"
+              noValidate
+            >
               {error && (
                 <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
                   {error}

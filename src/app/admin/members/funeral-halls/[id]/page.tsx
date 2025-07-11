@@ -3,39 +3,49 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import FuneralHallCashChargeList from "@/components/funeral-hall/FuneralHallCashChargeList";
 import FuneralHallMemberDetailTabs from "@/components/funeral-hall/FuneralHallMemberDetailTabs";
+import { userAPI } from "@/lib/api"; // API 모듈 경로 확인
 
-// 더미 fetch 함수 (실제 API 연동시 대체)
-function fetchFuneralHallMemberDetail(id: string) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id,
-        name: "김영희",
-        email: "kim@hanulae.com",
-        phone: "010-1234-5678",
-        funeralHall: "하늘장례식장",
-        currentPoints: 75000,
-        currentCash: 150000,
-      });
-    }, 1200);
-  });
+async function fetchFuneralHallMemberDetail(userId: string) {
+  // Call the API to get funeral hall member details
+  const response = await userAPI.getUserDetail(userId, "funeral");
+  console.log("🚀 ~ fetchFuneralHallMemberDetail ~ response:", response);
+  // Process the response data to match the desired structure
+  return {
+    id: response.data.funeral.funeralId,
+    name: response.data.funeral.funeralName,
+    username: response.data.funeral.funeralUsername,
+    phone: response.data.funeral.funeralPhoneNumber,
+    bankName: response.data.funeral.funeralBankName,
+    bankNumber: response.data.funeral.funeralBankNumber,
+    currentPoints: response.data.funeral.funeralPoint,
+    currentCash: response.data.funeral.funeralCash,
+    createdAt: response.data.funeral.createdAt,
+    updatedAt: response.data.funeral.updatedAt,
+  };
 }
 
-export default function FuneralHallMemberDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function FuneralHallMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string | null>(null);
   const [member, setMember] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchFuneralHallMemberDetail(params.id)
-    fetchFuneralHallMemberDetail(params.id).then((data) => {
+    params.then((p) => setId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchFuneralHallMemberDetail(id).then((data) => {
+      console.log("Fetched funeral hall member data:", data); // 데이터 확인
       setMember(data);
       setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching funeral hall member detail:", error);
+      setLoading(false);
     });
-  }, [params.id]);
+  }, [id]);
+
+  if (!id) return null;
 
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col items-center p-8 bg-white">
@@ -54,7 +64,7 @@ export default function FuneralHallMemberDetailPage({
                   {loading ? (
                     <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
                   ) : (
-                    member.email
+                    member.username
                   )}
                 </div>
               </div>
@@ -69,12 +79,22 @@ export default function FuneralHallMemberDetailPage({
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">장례식장</div>
+                <div className="text-xs text-gray-500">은행명</div>
                 <div className="font-medium">
                   {loading ? (
-                    <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
                   ) : (
-                    member.funeralHall
+                    member.bankName
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">계좌번호</div>
+                <div className="font-medium">
+                  {loading ? (
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                  ) : (
+                    member.bankNumber
                   )}
                 </div>
               </div>
@@ -102,7 +122,7 @@ export default function FuneralHallMemberDetailPage({
           </CardContent>
         </Card>
         {/* 공통 탭 UI */}
-        <FuneralHallMemberDetailTabs memberId={params.id} />
+        <FuneralHallMemberDetailTabs memberId={id} />
       </div>
     </div>
   );

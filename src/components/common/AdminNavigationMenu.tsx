@@ -45,9 +45,9 @@ const approvalItems = [
 
 const pointItems = [
   {
-    title: "포인트/캐시 지급 페이지",
+    title: "캐시 지급 페이지",
     href: "/admin/point-cash/issue",
-    description: "포인트/캐시를 지급합니다.",
+    description: "캐시를 지급합니다.",
     icon: Coins,
   },
   {
@@ -70,20 +70,20 @@ const pointItems = [
   },
 ];
 
-const dispatchItems = [
-  {
-    title: "전체 출동 내역",
-    href: "/admin/dispatch/history",
-    description: "전체 출동 내역을 확인합니다.",
-    icon: Calendar,
-  },
-  {
-    title: "전체 거래 내역",
-    href: "/admin/transactions/history",
-    description: "전체 거래 내역을 확인합니다.",
-    icon: FileText,
-  },
-];
+// const dispatchItems = [
+//   {
+//     title: "전체 출동 내역",
+//     href: "/admin/dispatch/history",
+//     description: "전체 출동 내역을 확인합니다.",
+//     icon: Calendar,
+//   },
+//   {
+//     title: "전체 거래 내역",
+//     href: "/admin/transactions/history",
+//     description: "전체 거래 내역을 확인합니다.",
+//     icon: FileText,
+//   },
+// ];
 
 const memberItems = [
   {
@@ -140,7 +140,7 @@ export const AdminNavigationMenu = () => {
           </NavigationMenuItem>
 
           <NavigationMenuItem>
-            <NavigationMenuTrigger>포인트 관리</NavigationMenuTrigger>
+            <NavigationMenuTrigger>캐시 관리</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[500px] gap-2 p-4 md:grid-cols-2">
                 {pointItems.map((item) => (
@@ -156,7 +156,7 @@ export const AdminNavigationMenu = () => {
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
-
+{/* 
           <NavigationMenuItem>
             <NavigationMenuTrigger>출동/거래내역</NavigationMenuTrigger>
             <NavigationMenuContent>
@@ -173,7 +173,7 @@ export const AdminNavigationMenu = () => {
                 ))}
               </ul>
             </NavigationMenuContent>
-          </NavigationMenuItem>
+          </NavigationMenuItem> */}
 
           <NavigationMenuItem>
             <NavigationMenuTrigger>회원 관리</NavigationMenuTrigger>

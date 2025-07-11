@@ -27,8 +27,8 @@ interface AttachmentDialogProps {
 
 export default function AttachmentDialog({
   trigger,
-  images,
-  files,
+  images = [],
+  files = [],
 }: AttachmentDialogProps) {
   // TODO: API 도입 시 useQuery 추가
   // const { data, isLoading } = useQuery({
