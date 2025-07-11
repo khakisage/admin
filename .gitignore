@@ -42,3 +42,4 @@ next-env.d.ts
 
 # firebase
 public/firebase-messaging-sw.js
+.env.local
