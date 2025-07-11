@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cashAPI } from "@/lib/api";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface ChargeHistory {
   id: number;
@@ -47,14 +49,14 @@ export default function ChargeHistoryPage() {
           paymentMethod: item.paymentMethod,
           status: item.status,
         }));
-        const funerals = (result.data.funerals || []).map((item: any) => ({
+        const funerals = (result.data.funeralCash || []).map((item: any) => ({
           id: item.id,
-          amount: item.amount,
-          paymentDate: item.paymentDate,
-          memberName: item.memberName,
+          amount: item.funeralCashAmount,
+          paymentDate: item.createdAt,
+          // memberName: item.funeral.funeralName,
           memberType: "funeral",
-          company: item.company,
-          paymentMethod: item.paymentMethod,
+          company: item.funeral.funeralName,
+          paymentMethod: item.transactionType,
           status: item.status,
         }));
         setData([...managers, ...funerals]);
@@ -100,6 +102,13 @@ export default function ChargeHistoryPage() {
         return status;
     }
   };
+
+  const transPaymentMethod = (paymentMethod: string) => {
+    switch (paymentMethod) {
+      case "earn_cash":
+        return "적립";
+    }
+  }
 
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>에러: {error}</div>;
@@ -162,10 +171,10 @@ export default function ChargeHistoryPage() {
                       {item.amount.toLocaleString()}원
                     </div>
                     <div className="min-w-[150px] text-sm text-muted-foreground">
-                      {item.paymentDate}
+                      {format(new Date(item.paymentDate), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
                     </div>
                     <div className="min-w-[100px] text-sm text-muted-foreground">
-                      {item.paymentMethod}
+                      {transPaymentMethod(item.paymentMethod)}
                     </div>
                     <div
                       className={`min-w-[80px] text-sm font-medium ${getStatusColor(
