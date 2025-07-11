@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 import { useState, useEffect } from "react";
+import { noticeAPI } from "@/lib/api"; // 상단에 import 추가
 
 interface Notice {
   id: number;
@@ -93,7 +94,6 @@ export default function NoticeFormDialog({
       toast.error("제목을 입력해주세요.");
       return;
     }
-
     if (!content.trim()) {
       toast.error("내용을 입력해주세요.");
       return;
@@ -101,23 +101,37 @@ export default function NoticeFormDialog({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
-        id: mode === "edit" ? notice?.id : undefined,
-        title: title.trim(),
-        content: content.trim(),
-        userType,
-        isActive,
-      });
+      if (mode === "create") {
+        // 등록 API 호출
+        await noticeAPI.createNotice({
+          title: title.trim(),
+          content: content.trim(),
+          userType,
+          isActive,
+        });
+        toast.success("공지사항이 등록되었습니다.");
+      } else {
+        // 수정 API 호출
+        await noticeAPI.updateNotice({
+          id: notice?.id as string, // UUID
+          title: title.trim(),
+          content: content.trim(),
+          isActive,
+        });
+        toast.success("공지사항이 수정되었습니다.");
+      }
 
-      // 성공 시 Dialog 닫기 및 폼 초기화
       setOpen(false);
       setTitle("");
       setContent("");
       setUserType("all");
       setIsActive(true);
-    } catch (error) {
-      console.error("공지사항 저장 실패:", error);
-      toast.error("공지사항 저장에 실패했습니다.");
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "공지사항 저장에 실패했습니다."
+      );
     } finally {
       setIsSubmitting(false);
     }

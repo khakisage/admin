@@ -10,35 +10,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-function fetchApplyList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          date: "2024-05-10",
-          desc: "출동 신청 - 장례식장 A",
-          status: "완료",
-          chiefName: "홍길동",
-          deceasedName: "김철수",
-          chiefPhone: "010-1234-5678",
-          emergencyPhone: "010-8765-4321",
-        },
-        {
-          id: 2,
-          date: "2024-04-01",
-          desc: "출동 신청 - 장례식장 B",
-          status: "취소",
-          chiefName: "이영희",
-          deceasedName: "박민수",
-          chiefPhone: "010-2222-3333",
-          emergencyPhone: "010-4444-5555",
-        },
-      ]);
-    }, 1000);
-  });
-}
+import { dispatchAPI } from "@/lib/api";
 
 function isExpired(dateStr: string) {
   const now = new Date();
@@ -49,45 +21,53 @@ function isExpired(dateStr: string) {
 
 export default function CompanyMemberApplyList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchApplyList(memberId)
-    fetchApplyList(memberId).then((data) => {
-      setList(data);
-      setLoading(false);
-    });
-  }, [memberId]);
+    dispatchAPI
+      .getDispatchRequestsByUser(memberId, memberType)
+      .then((response) => {
+        console.log("Fetched dispatch requests:", response.data);
+        setList(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching dispatch request list:", error);
+        setLoading(false);
+      });
+  }, [memberId, memberType]);
 
   if (loading) return <CompanyMemberListSkeleton />;
 
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (
-        list.map((item) => {
-          const expired = isExpired(item.date);
+        list.map((item, index) => {
+          const expired = isExpired(item.createdAt);
           return (
             <div
-              key={item.id}
+              key={index}
               className="border rounded p-4 flex justify-between items-center"
             >
               <div className="flex gap-8 items-center flex-1">
-                <div>{item.date}</div>
-                <div>{item.desc}</div>
+                <div>{item.createdAt}</div>
+                <div>{item.address}</div>
                 <Badge
-                  variant={item.status === "완료" ? "default" : "secondary"}
+                  variant={item.isApproved === "completed" ? "default" : "secondary"}
                 >
-                  {item.status}
+                  {item.isApproved}
                 </Badge>
               </div>
               <Dialog
-                open={openId === item.id}
-                onOpenChange={(open) => setOpenId(open ? item.id : null)}
+                open={openId === index}
+                onOpenChange={(open) => setOpenId(open ? index : null)}
               >
                 <DialogTrigger asChild>
                   <button className="px-4 py-2 rounded bg-blue-50 hover:bg-blue-100 border text-blue-700 font-medium">
@@ -97,16 +77,16 @@ export default function CompanyMemberApplyList({
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>출동 신청 상세 정보</DialogTitle>
-                    <DialogDescription>신청일: {item.date}</DialogDescription>
+                    <DialogDescription>신청일: {item.createdAt}</DialogDescription>
                   </DialogHeader>
                   <div className="mt-4 space-y-2">
                     <div>
                       <span className="font-semibold">상주 이름: </span>
-                      {item.chiefName}
+                      {item.managerForm?.chiefMournerName || "정보 없음"}
                     </div>
                     <div>
                       <span className="font-semibold">고인 이름: </span>
-                      {item.deceasedName}
+                      {item.funeralId || "정보 없음"}
                     </div>
                     <div>
                       <span className="font-semibold">상주 전화번호: </span>
@@ -115,7 +95,7 @@ export default function CompanyMemberApplyList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.chiefPhone
+                        item.managerPhoneNumber || "정보 없음"
                       )}
                     </div>
                     <div>
@@ -125,7 +105,7 @@ export default function CompanyMemberApplyList({
                           저장기간 만료로 삭제됨
                         </span>
                       ) : (
-                        item.emergencyPhone
+                        item.emergencyPhoneNumber || "정보 없음"
                       )}
                     </div>
                   </div>

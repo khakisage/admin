@@ -9,41 +9,49 @@ import {
   MenubarItem,
 } from "@/components/ui/menubar";
 import { MoreHorizontal } from "lucide-react";
-
-function fetchFuneralHallCashRefundRequestList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, date: "2024-05-15", amount: 50000, status: "신청" },
-        { id: 2, date: "2024-04-30", amount: 80000, status: "완료" },
-      ]);
-    }, 1000);
-  });
-}
+import { cashAPI } from "@/lib/api"; // Ensure the correct path to your API module
 
 export default function FuneralHallCashRefundRequestList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchFuneralHallCashRefundRequestList(memberId)
-    fetchFuneralHallCashRefundRequestList(memberId).then((data) => {
-      setList(data);
+    cashAPI.getRefundRequestByUserId(memberId, "funeral").then((response) => {
+      console.log("Fetched refund requests:", response.data.refundRequests); // Log the data
+      setList(response.data.refundRequests);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching cash refund request list:", error);
       setLoading(false);
     });
-  }, [memberId]);
+  }, [memberId, memberType]);
 
   const handleApprove = (id: number) => {
     alert(`승인: ${id}`);
-    // TODO: 승인 API 연동
+    // TODO: Integrate approval API
   };
   const handleReject = (id: number) => {
     alert(`거절: ${id}`);
-    // TODO: 거절 API 연동
+    // TODO: Integrate rejection API
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <span className="text-green-500">승인</span>;
+      case "rejected":
+        return <span className="text-red-500">거절</span>;
+      case "pending":
+        return <span className="text-yellow-500">대기중</span>;
+      default:
+        return <span>{status}</span>;
+    }
   };
 
   if (loading) return <CompanyMemberListSkeleton />;
@@ -53,13 +61,23 @@ export default function FuneralHallCashRefundRequestList({
       {list && list.length > 0 ? (
         list.map((item) => (
           <div
-            key={item.id}
+            key={item.refundRequestId}
             className="border rounded p-4 flex justify-between items-center"
           >
-            <div className="flex gap-8 items-center flex-1">
-              <div>{item.date}</div>
-              <div>{item.amount.toLocaleString()}원</div>
-              <div>{item.status}</div>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex justify-between">
+                <div className="font-bold">{item.manager.managerName}</div>
+                <div>{item.manager.managerBankName}</div>
+              </div>
+              <div className="flex justify-between">
+                <div>{item.manager.managerPhoneNumber}</div>
+                <div>{item.refundAmount.toLocaleString()}원</div>
+              </div>
+              <div className="flex justify-between">
+                <div>{item.updatedAt}</div>
+                <div>{item.manager.managerBankNumber}</div>
+              </div>
+              <div className="text-right">{getStatusLabel(item.status)}</div>
             </div>
             <Menubar>
               <MenubarMenu>
@@ -69,10 +87,10 @@ export default function FuneralHallCashRefundRequestList({
                   </button>
                 </MenubarTrigger>
                 <MenubarContent align="end">
-                  <MenubarItem onClick={() => handleApprove(item.id)}>
+                  <MenubarItem onClick={() => handleApprove(item.refundRequestId)}>
                     승인
                   </MenubarItem>
-                  <MenubarItem onClick={() => handleReject(item.id)}>
+                  <MenubarItem onClick={() => handleReject(item.refundRequestId)}>
                     거절
                   </MenubarItem>
                 </MenubarContent>

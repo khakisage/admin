@@ -1,31 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "./CompanyMemberListSkeleton";
-
-// 더미 fetch 함수 (실제 API 연동시 대체)
-function fetchCashChargeList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, date: "2024-06-01", amount: 100000, status: "완료" },
-        { id: 2, date: "2024-05-20", amount: 50000, status: "완료" },
-      ]);
-    }, 1000);
-  });
-}
+import { cashAPI } from "@/lib/api"; // API 모듈 경로 확인
 
 export default function CompanyMemberCashChargeList({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: 실제 API 연동 fetchCashChargeList(memberId)
-    fetchCashChargeList(memberId).then((data) => {
+    // 실제 API 연동
+    cashAPI.getManagerCashChargeHistoryById(memberId, "manager").then((data) => {
       setList(data);
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching cash charge list:", error);
       setLoading(false);
     });
   }, [memberId]);

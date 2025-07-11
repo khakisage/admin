@@ -5,7 +5,7 @@ import CompanyMemberCashRefundList from "./CompanyMemberCashRefundList";
 import CompanyMemberApplyList from "./CompanyMemberApplyList";
 
 const TAB_LIST = [
-  { key: "charge", label: "캐시 충전 내역" },
+  // { key: "charge", label: "캐시 충전 내역" },
   { key: "refundRequest", label: "캐시 환급 신청 내역" },
   { key: "refund", label: "캐시 환급 내역" },
   { key: "apply", label: "출동 신청 내역" },
@@ -13,8 +13,10 @@ const TAB_LIST = [
 
 export default function CompanyMemberDetailTabs({
   memberId,
+  memberType,
 }: {
   memberId: string;
+  memberType: string;
 }) {
   const [tab, setTab] = useState("charge");
 
@@ -36,16 +38,16 @@ export default function CompanyMemberDetailTabs({
         ))}
       </div>
       <div>
-        {tab === "charge" && (
-          <CompanyMemberCashChargeList memberId={memberId} />
-        )}
+        {/* {tab === "charge" && (
+          <CompanyMemberCashChargeList memberId={memberId} memberType={memberType} />
+        )} */}
         {tab === "refundRequest" && (
-          <CompanyMemberCashRefundRequestList memberId={memberId} />
+          <CompanyMemberCashRefundRequestList memberId={memberId} memberType={memberType} />
         )}
         {tab === "refund" && (
-          <CompanyMemberCashRefundList memberId={memberId} />
+          <CompanyMemberCashRefundList memberId={memberId} memberType={memberType} />
         )}
-        {tab === "apply" && <CompanyMemberApplyList memberId={memberId} />}
+        {tab === "apply" && <CompanyMemberApplyList memberId={memberId} memberType={memberType} />}
       </div>
     </div>
   );
