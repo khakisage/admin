@@ -36,11 +36,11 @@ export default function FuneralHallMemberDetailPage({ params }: { params: Promis
   useEffect(() => {
     if (!id) return;
     fetchFuneralHallMemberDetail(id).then((data) => {
-      console.log("Fetched funeral hall member data:", data); // 데이터 확인
+      // console.log("Fetched funeral hall member data:", data); // 데이터 확인
       setMember(data);
       setLoading(false);
     }).catch((error) => {
-      console.error("Error fetching funeral hall member detail:", error);
+      // console.error("Error fetching funeral hall member detail:", error);
       setLoading(false);
     });
   }, [id]);

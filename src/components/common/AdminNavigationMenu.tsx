@@ -87,9 +87,9 @@ const pointItems = [
 
 const memberItems = [
   {
-    title: "상조회사 유저 목록",
+    title: "상조팀장 유저 목록",
     href: "/admin/members/companies",
-    description: "상조회사 유저 목록을 관리합니다.",
+    description: "상조팀장 유저 목록을 관리합니다.",
     icon: Users,
   },
   {

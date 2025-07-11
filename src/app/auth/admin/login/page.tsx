@@ -68,7 +68,7 @@ export default function Login() {
       localStorage.setItem("adminInfo", JSON.stringify(response.admin));
 
       // 로그인 성공 시 관리자 대시보드로 이동
-      router.push("/admin");
+      router.push("/admin/approval/funeral");
     } catch (error: any) {
       // 백엔드 메시지 우선
       const errorMessage =
