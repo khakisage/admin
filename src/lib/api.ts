@@ -2,8 +2,8 @@ import axios from "axios";
 
 // API 인스턴스 생성
 export const api = axios.create({
-  // baseURL: "http://localhost:8000/api",
-  baseURL: "https://www.wooricenter.co.kr/api",
+   baseURL: "http://localhost:8000/api",
+  //baseURL: "https://www.wooricenter.co.kr/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -250,16 +250,19 @@ export const noticeAPI = {
     title,
     content,
     isActive,
+    userType,
   }: {
     id: string;
     title: string;
     content: string;
     isActive: boolean;
+    userType: "manager" | "funeral" | "all";
   }) => {
     const response = await api.patch(`/admin/notice/update/${id}`, {
       title,
       content,
       isVisible: isActive,
+      userType,
     });
     return response.data;
   },

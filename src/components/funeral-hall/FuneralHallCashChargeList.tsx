@@ -3,17 +3,6 @@ import { useEffect, useState } from "react";
 import CompanyMemberListSkeleton from "@/components/company-member/CompanyMemberListSkeleton";
 import { cashAPI } from "@/lib/api";
 
-function fetchFuneralHallCashChargeList(memberId: string) {
-  return new Promise<any[]>((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, date: "2024-06-01", amount: 200000, status: "완료" },
-        { id: 2, date: "2024-05-20", amount: 100000, status: "완료" },
-      ]);
-    }, 1000);
-  });
-}
-
 export default function FuneralHallCashChargeList({
   memberId,
 }: {
@@ -23,14 +12,21 @@ export default function FuneralHallCashChargeList({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 실제 API 연동
-    cashAPI.getManagerCashChargeHistoryById(memberId, "funeral").then((data) => {
-      setList(data);
-      setLoading(false);
-    }).catch((error) => {
-      console.error("Error fetching cash charge list:", error);
-      setLoading(false);
-    });
+    cashAPI
+      .getManagerCashChargeHistoryById(memberId, "funeral")
+      .then((response) => {
+        console.log("🚀 ~ cashAPI.getManagerCashChargeHistoryById ~ data:", response.data);
+        // Filter for transactionType "earn_cash"
+        const filteredData = response.data.filter(
+          (item: any) => item.transactionType === "earn_cash"
+        );
+        setList(filteredData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching cash charge list:", error);
+        setLoading(false);
+      });
   }, [memberId]);
 
   if (loading) return <CompanyMemberListSkeleton />;
@@ -40,12 +36,13 @@ export default function FuneralHallCashChargeList({
       {list && list.length > 0 ? (
         list.map((item) => (
           <div
-            key={item.id}
+            key={item.funeralCashHistoryId}
             className="border rounded p-4 flex justify-between items-center"
           >
-            <div>{item.date}</div>
-            <div>{item.amount.toLocaleString()}원</div>
-            <div>{item.status}</div>
+            <div>{new Date(item.createdAt).toLocaleDateString()}</div>
+            <div>충전금액: {item.funeralCashAmount.toLocaleString()}원</div>
+            <div>{item.status === "completed" ? "완료" : "처리중"}</div>
+            <div>잔액: {item.funeralCashBalanceAfter.toLocaleString()}원</div>
           </div>
         ))
       ) : (

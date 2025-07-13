@@ -71,7 +71,8 @@ export default function FuneralHallEstimateRequestList({
                   </div>
                   <div>
                     <span className="font-semibold">상태: </span>
-                    {item.bidStatus}
+                    {/* {item.bidStatus} */}
+                    {"완료"}
                   </div>
                   <div>
                     <span className="font-semibold">신청 ID: </span>
