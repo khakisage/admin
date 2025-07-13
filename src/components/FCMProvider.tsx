@@ -47,7 +47,7 @@ export function FCMProvider({ children }: { children: React.ReactNode }) {
               await api.post('/common/notification/fcm/token', {
                 fcmToken: token,
                 deviceId: navigator.userAgent || 'unknown',
-                deviceType: 'web',
+                deviceType: 'android',
               });
               
               // 토큰 저장 성공 시 로컬스토리지에 저장
