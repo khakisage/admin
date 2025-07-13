@@ -41,21 +41,37 @@ export function FCMProvider({ children }: { children: React.ReactNode }) {
           // 로컬스토리지에서 이전 토큰 확인
           const savedToken = localStorage.getItem('fcmToken');
           
-          // 토큰이 변경되었거나 처음 저장하는 경우에만 API 호출
+          // 토큰이 변경되었거나 처음 저장하는 경우에만 처리
           if (savedToken !== token) {
-            try {
-              await api.post('/common/notification/fcm/token', {
-                fcmToken: token,
-                deviceId: navigator.userAgent || 'unknown',
-                deviceType: 'android',
-              });
-              
-              // 토큰 저장 성공 시 로컬스토리지에 저장
+            // 로그인 상태 확인
+            const accessToken = localStorage.getItem('accessToken');
+            
+            if (accessToken) {
+              // 로그인된 경우에만 백엔드에 토큰 저장
+              try {
+                await api.post('/common/notification/fcm/token', {
+                  fcmToken: token,
+                  deviceId: navigator.userAgent || 'unknown',
+                  deviceType: 'android',
+                });
+                
+                // 토큰 저장 성공 시 로컬스토리지에 저장
+                localStorage.setItem('fcmToken', token);
+                tokenSavedRef.current = true;
+                console.log('🔑 FCM 토큰 저장 성공 (로그인 상태)');
+              } catch (error: any) {
+                  console.error('❌ FCM 토큰 저장 실패:', error);
+                  // 401 에러가 아닌 경우에만 토큰을 로컬에 저장
+                  if (error?.response?.status !== 401) {
+                    localStorage.setItem('fcmToken', token);
+                    tokenSavedRef.current = true;
+                  }
+              }
+            } else {
+              // 로그인되지 않은 경우 로컬에만 저장하고 나중에 백엔드 저장
               localStorage.setItem('fcmToken', token);
               tokenSavedRef.current = true;
-              console.log('🔑 FCM 토큰 저장 성공');
-            } catch (error) {
-              console.error('❌ FCM 토큰 저장 실패:', error);
+              console.log('🔑 FCM 토큰 로컬 저장 완료 (로그인 후 백엔드 저장 예정)');
             }
           } else {
             console.log('🔄 동일한 토큰이 이미 저장되어 있음');
