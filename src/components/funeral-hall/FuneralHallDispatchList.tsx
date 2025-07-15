@@ -32,7 +32,7 @@ export default function FuneralHallDispatchList({
   useEffect(() => {
     // 실제 API 연동
     dispatchAPI.getDispatchRequestsByUser(memberId, "funeral").then((response) => {
-      // console.log("Fetched dispatch requests:", response.data); // Log the data
+      console.log("Fetched dispatch requests:", response.data); // Log the data
       setList(response.data);
       setLoading(false);
     }).catch((error) => {
@@ -54,8 +54,14 @@ export default function FuneralHallDispatchList({
               className="border rounded p-4 flex justify-between items-center"
             >
               <div className="flex gap-8 items-center flex-1">
-                <div className="font-semibold">{item.managerName}</div>
-                <div>{item.createdAt ? item.createdAt.replace("T", " ") : "N/A"}</div>
+              <div>{item.createdAt ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(item.createdAt)) : "N/A"}</div>
+              <div className="font-semibold">{item.address}</div>
+              <div className={`px-3 py-1 rounded-full text-white ${item.isApproved ? 'bg-black' : 'bg-blue-100 text-blue-700'}`}>
+  {item.isApproved ? "completed" : "approved"}
+</div>
+              {/* <div className="font-semibold">{item.managerName}</div> */}
+              
+                
               </div>
               <Dialog
                 open={openId === item.dispatchRequestId}

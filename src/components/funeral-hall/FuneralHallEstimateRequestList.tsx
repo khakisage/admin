@@ -24,7 +24,7 @@ export default function FuneralHallEstimateRequestList({
     estimateAPI
       .getEstimateRequestList(memberId)
       .then((response) => {
-        // console.log("Fetched estimate requests:", response);
+        console.log("Fetched estimate requests:", response);
         setList(response.data); // Access the data array
         setLoading(false);
       })
@@ -36,6 +36,28 @@ export default function FuneralHallEstimateRequestList({
 
   if (loading) return <CompanyMemberListSkeleton />;
 
+  const bidStatusLabels = {
+    pending: '상조팀장이 견적 신청, 장례식장 응답 대기 중',
+    bid_submitted: '장례식장이 입찰 제출',
+    bid_selected: '상조팀장이 입찰 선택 및 출동 신청',
+    bid_progress: '장례식장 + 상조팀장 출동요청 및 출동 승인 후 거래 진행중 상태',
+    deceased_arrived: '고인 안치 완료',
+    transaction_completed: '거래 완료',
+    rejected: '거절/취소',
+    expired: '만료',
+  };
+
+  const statusColors = {
+    pending: 'bg-yellow-100 text-yellow-700',
+    bid_submitted: 'bg-blue-100 text-blue-700',
+    bid_selected: 'bg-green-100 text-green-700',
+    bid_progress: 'bg-orange-100 text-orange-700',
+    deceased_arrived: 'bg-purple-100 text-purple-700',
+    transaction_completed: 'bg-black text-white',
+    rejected: 'bg-red-100 text-red-700',
+    expired: 'bg-gray-100 text-gray-700',
+  };
+
   return (
     <div className="space-y-2">
       {list && list.length > 0 ? (
@@ -45,8 +67,14 @@ export default function FuneralHallEstimateRequestList({
             className="border rounded p-4 flex justify-between items-center"
           >
             <div className="flex gap-8 items-center flex-1">
-              <div className="font-semibold">{item.managerForm.chiefMournerName}</div>
-              <div>{item.bidSubmittedAt}</div>
+            <div>
+                {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(item.managerFormCreatedAt))}
+              </div>
+              <div className="font-semibold">상주명: {item.managerForm.chiefMournerName}</div>
+              <div className="font-semibold">홀명: {item.funeralHallName}</div>
+              <div><div className={`px-3 py-1 rounded-full ${statusColors[item.bidStatus] || 'bg-gray-100 text-gray-700'}`}>
+  {bidStatusLabels[item.bidStatus] || 'Unknown Status'}
+</div></div>
             </div>
             <Dialog
               open={openId === index}
@@ -66,21 +94,26 @@ export default function FuneralHallEstimateRequestList({
                 </DialogHeader>
                 <div className="mt-4 space-y-2">
                   <div>
-                    <span className="font-semibold">상주 이름: </span>
+                    <span className="font-semibold">상주명: </span>
                     {item.managerForm.chiefMournerName}
                   </div>
                   <div>
                     <span className="font-semibold">상태: </span>
-                    {/* {item.bidStatus} */}
-                    {"완료"}
+                    {
+                      bidStatusLabels[item.bidStatus as keyof typeof bidStatusLabels] || 'Unknown Status'
+                    }
                   </div>
                   <div>
-                    <span className="font-semibold">신청 ID: </span>
-                    {item.managerFormBidId}
+                    <span className="font-semibold">홀명: </span>
+                    {item.funeralHallName}
                   </div>
                   <div>
-                    <span className="font-semibold">생성일: </span>
-                    {item.managerFormCreatedAt}
+                    <span className="font-semibold">할인율: </span>
+                    {item.discount}%
+                  </div>
+                  <div>
+                    <span className="font-semibold">신청일: </span>
+                    {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(item.managerFormCreatedAt))}
                   </div>
                 </div>
               </DialogContent>
