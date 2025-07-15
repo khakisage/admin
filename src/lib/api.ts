@@ -2,7 +2,7 @@ import axios from "axios";
 
 // API 인스턴스 생성
 export const api = axios.create({
-   baseURL: "http://localhost:8000/api",
+  baseURL: "http://localhost:8000/api",
   //baseURL: "https://www.wooricenter.co.kr/api",
   headers: {
     "Content-Type": "application/json",
@@ -73,49 +73,63 @@ export const approvalAPI = {
     const response = await api.get("/requests");
     return response.data;
   },
-  
+
   // 장례식장 가입 요청 목록
   getFuneralRequests: async () => {
     const response = await api.get("/admin/funeral/requests");
     return response.data;
   },
-  
+
   // 팀장 가입 요청 목록
   getManagerRequests: async () => {
     const response = await api.get("/admin/manager/requests");
     return response.data;
   },
-  
+
   // 팀장 파일 목록 조회
   getManagerFiles: async (managerId: string) => {
     const response = await api.get(`/requests/file/${managerId}`);
     return response.data;
   },
-  
+
   // 팀장 가입 승인/거절 처리
-  setManagerApproval: async (managerId: string, isApproved: boolean, rejectReason?: string) => {
+  setManagerApproval: async (
+    managerId: string,
+    isApproved: boolean,
+    rejectReason?: string
+  ) => {
     // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ managerId:", managerId)
     // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ isApproved:", isApproved)
     // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ rejectReason:", rejectReason)
-    const response = await api.patch(`/admin/manager/requests/approve/${managerId}`, {
-      isApproved,
-      message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
-    });
+    const response = await api.patch(
+      `/admin/manager/requests/approve/${managerId}`,
+      {
+        isApproved,
+        message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
+      }
+    );
     return response.data;
   },
-  
+
   // 장례식장 첨부파일 조회
   getFuneralFiles: async (funeralId: string) => {
     const response = await api.get(`/funeral/requests/file/${funeralId}`);
     return response.data;
   },
-  
+
   // 장례식장 가입 승인/거절 처리
-  setFuneralApproval: async (funeralId: string, isApproved: boolean, rejectReason?: string) => {
-    const response = await api.patch(`/admin/funeral/requests/approve/${funeralId}`, {
-      isApproved,
-      message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
-    });
+  setFuneralApproval: async (
+    funeralId: string,
+    isApproved: boolean,
+    rejectReason?: string
+  ) => {
+    const response = await api.patch(
+      `/admin/funeral/requests/approve/${funeralId}`,
+      {
+        isApproved,
+        message: isApproved ? undefined : rejectReason, // 거절일 경우에만 사유를 보냄
+      }
+    );
     return response.data;
   },
 };
@@ -126,7 +140,7 @@ export const userAPI = {
     const response = await api.get("/admin/user/userList?type=manager");
     return response.data;
   },
-  
+
   getFuneralList: async () => {
     const response = await api.get("/admin/user/userList?type=funeral");
     return response.data;
@@ -192,22 +206,30 @@ export const cashAPI = {
   },
 
   // 특정 상조팀장의 캐시 충전 내역 조회
-  getManagerCashChargeHistoryById: async (memberId: string, memberType: string) => {
-
-    const response = await api.get(`/admin/cash/history/${memberId}?type=${memberType}`);
+  getManagerCashChargeHistoryById: async (
+    memberId: string,
+    memberType: string
+  ) => {
+    const response = await api.get(
+      `/admin/cash/history/${memberId}?type=${memberType}`
+    );
 
     return response.data;
   },
 
   // 특정 유저의 환급 신청 내역 조회
   getRefundRequestByUserId: async (userId: string, type: string) => {
-    const response = await api.get(`/admin/refund/list/refund/${userId}?type=${type}`);
+    const response = await api.get(
+      `/admin/refund/list/refund/${userId}?type=${type}`
+    );
     return response.data;
   },
 
   // 특정 유저의 승인된 환급 신청 내역 조회
   getApprovedRefundRequestsByUserId: async (userId: string, type: string) => {
-    const response = await api.get(`/admin/refund/approved/list/${userId}?type=${type}`);
+    const response = await api.get(
+      `/admin/refund/approved/list/${userId}?type=${type}`
+    );
     return response.data;
   },
 };
@@ -215,10 +237,13 @@ export const cashAPI = {
 // 공지사항 등록/수정 API
 export const noticeAPI = {
   // 공지사항 리스트 조회
-  getNoticeList: async (params: { userType?: string; isVisible?: boolean } = {}) => {
+  getNoticeList: async (
+    params: { userType?: string; isVisible?: boolean } = {}
+  ) => {
     const query = new URLSearchParams();
     if (params.userType) query.append("userType", params.userType);
-    if (typeof params.isVisible === "boolean") query.append("isVisible", String(params.isVisible));
+    if (typeof params.isVisible === "boolean")
+      query.append("isVisible", String(params.isVisible));
     const response = await api.get(`/admin/notice/list?${query.toString()}`);
     return response.data;
   },
@@ -276,7 +301,93 @@ export const noticeAPI = {
 // Dispatch Request API
 export const dispatchAPI = {
   getDispatchRequestsByUser: async (userId: string, userType: string) => {
-    const response = await api.get(`/admin/dispatch/user/dispatch/requests?userId=${userId}&userType=${userType}`);
+    const response = await api.get(
+      `/admin/dispatch/user/dispatch/requests?userId=${userId}&userType=${userType}`
+    );
     return response.data;
+  },
+};
+
+// 알림 관련 타입 정의
+export interface NotificationItem {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  data?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetNotificationListParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+}
+
+export interface GetNotificationListResponse {
+  count: number;
+  rows: UnreadNotificationRow[];
+}
+
+export interface GetUnreadNotificationCountResponse {
+  count: number;
+  rows: UnreadNotificationRow[];
+}
+
+interface UnreadNotificationRow {
+  body: string;
+  createdAt: string;
+  date: {
+    amount: number;
+    managerId: string;
+    managerName: string;
+    requestType: string;
+  };
+  isRead: boolean;
+  notificationId: string;
+  notificationType: string;
+  readAt: string | null;
+  receiverType: string;
+  receiverId: string;
+  senderId: string;
+  senderType: string;
+  sentAt: string;
+  title: string;
+  updatedAt: string;
+}
+
+// 알림 API
+export const notificationApiService = {
+  // 알림 목록 조회
+  getNotificationList: async (
+    params: GetNotificationListParams = {}
+  ): Promise<GetNotificationListResponse> => {
+    const response = await api.get("/common/notification/list", {
+      params: {
+        page: params.page || 1,
+        limit: params.limit || 20,
+        type: params.type || undefined,
+      },
+    });
+    return response.data.data;
+  },
+
+  // 읽지 않은 알림 개수 조회
+  getUnreadNotificationCount:
+    async (): Promise<GetUnreadNotificationCountResponse> => {
+      const response = await api.get("/common/notification/badge-count");
+      return response.data.data;
+    },
+
+  // 알림 읽음 처리
+  markAsRead: async (notificationId: string): Promise<void> => {
+    await api.put(`/common/notification/${notificationId}/read`);
+  },
+
+  // 모든 알림 읽음 처리
+  markAllAsRead: async (): Promise<void> => {
+    await api.patch("/common/notification/read-all");
   },
 };
