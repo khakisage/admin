@@ -47,6 +47,7 @@ interface NoticeFormDialogProps {
     userType: "manager" | "funeral" | "all";
     isActive: boolean;
   }) => void;
+  onSuccess?: () => void; // New prop for success callback
 }
 
 export default function NoticeFormDialog({
@@ -56,13 +57,12 @@ export default function NoticeFormDialog({
   open: externalOpen,
   onOpenChange: externalOnOpenChange,
   onSubmit,
+  onSuccess, // Destructure the new prop
 }: NoticeFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [userType, setUserType] = useState<"manager" | "funeral" | "all">(
-    "all"
-  );
+  const [userType, setUserType] = useState<"manager" | "funeral" | "all">("all");
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,7 +78,7 @@ export default function NoticeFormDialog({
     if (mode === "edit" && notice) {
       setTitle(notice.title);
       setContent(notice.content);
-      setUserType(notice.userType);
+      setUserType(notice.userType); // Ensure this is set correctly
       setIsActive(notice.isActive);
     } else {
       // 신규 등록 모드일 때 초기화
@@ -117,6 +117,7 @@ export default function NoticeFormDialog({
           title: title.trim(),
           content: content.trim(),
           isActive,
+          userType,
         });
         toast.success("공지사항이 수정되었습니다.");
       }
@@ -126,6 +127,8 @@ export default function NoticeFormDialog({
       setContent("");
       setUserType("all");
       setIsActive(true);
+
+      if (onSuccess) onSuccess(); // Call the success callback
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message ||
@@ -188,9 +191,7 @@ export default function NoticeFormDialog({
             <Label htmlFor="userType">대상 유저</Label>
             <Select
               value={userType}
-              onValueChange={(value: "manager" | "funeral" | "all") =>
-                setUserType(value)
-              }
+              onValueChange={(value: "manager" | "funeral" | "all") => setUserType(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="대상 유저를 선택하세요" />

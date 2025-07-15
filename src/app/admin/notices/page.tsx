@@ -162,7 +162,7 @@ export default function NoticesPage() {
           userType: data.userType,
           isActive: data.isActive,
           createdAt: new Date().toISOString().replace("T", " ").slice(0, 19),
-          updatedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
+          updatedAt: new Date().  toISOString().replace("T", " ").slice(0, 19),
         };
         setData((prev) => [newNotice, ...prev]);
         fetchNotices(); // 목록 갱신!
@@ -248,6 +248,7 @@ export default function NoticesPage() {
                 trigger={<Button>신규 공지사항 등록</Button>}
                 mode="create"
                 onSubmit={handleSubmitNotice}
+                onSuccess={fetchNotices} // Pass the fetchNotices function
               />
             </div>
           </div>
@@ -328,6 +329,7 @@ export default function NoticesPage() {
               open={isEditDialogOpen}
               onOpenChange={setIsEditDialogOpen}
               onSubmit={handleSubmitNotice}
+              onSuccess={fetchNotices} // Pass the fetchNotices function
             />
           )}
         </CardContent>
