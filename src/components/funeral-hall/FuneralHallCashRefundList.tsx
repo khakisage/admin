@@ -21,15 +21,22 @@ export default function FuneralHallCashRefundList({
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 환불 내역 조회
   useEffect(() => {
-    cashAPI.getApprovedRefundRequestsByUserId(memberId, "funeral").then((response) => {
-      console.log("Fetched approved refund requests:", response.data.refundRequests); // Log the data
-      setList(response.data.refundRequests);
-      setLoading(false);
-    }).catch((error) => {
-      console.error("Error fetching approved refund request list:", error);
-      setLoading(false);
-    });
+    cashAPI
+      .getApprovedRefundRequestsByUserId(memberId, "funeral")
+      .then((response) => {
+        console.log(
+          "Fetched approved refund requests:",
+          response.data.refundRequests
+        ); // Log the data
+        setList(response.data.refundRequests);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching approved refund request list:", error);
+        setLoading(false);
+      });
   }, [memberId, memberType]);
 
   const getStatusLabel = (status: string) => {
@@ -76,7 +83,9 @@ export default function FuneralHallCashRefundList({
                   </button>
                 </MenubarTrigger>
                 <MenubarContent align="end">
-                  <MenubarItem onClick={() => alert(`Details for ${item.refundRequestId}`)}>
+                  <MenubarItem
+                    onClick={() => alert(`Details for ${item.refundRequestId}`)}
+                  >
                     Details
                   </MenubarItem>
                 </MenubarContent>

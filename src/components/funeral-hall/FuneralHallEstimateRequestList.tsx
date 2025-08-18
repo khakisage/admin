@@ -20,6 +20,7 @@ export default function FuneralHallEstimateRequestList({
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
+  // 견적 신청 내역 조회
   useEffect(() => {
     estimateAPI
       .getEstimateRequestList(memberId)
@@ -45,7 +46,9 @@ export default function FuneralHallEstimateRequestList({
             className="border rounded p-4 flex justify-between items-center"
           >
             <div className="flex gap-8 items-center flex-1">
-              <div className="font-semibold">{item.managerForm.chiefMournerName}</div>
+              <div className="font-semibold">
+                {item.managerForm.chiefMournerName}
+              </div>
               <div>{item.bidSubmittedAt}</div>
             </div>
             <Dialog
