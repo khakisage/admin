@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { adminAuthAPI } from "@/lib/api";
+import { adminAuthAPI, api } from "@/lib/api";
 
 export default function Login() {
   const router = useRouter();
@@ -59,7 +59,7 @@ export default function Login() {
 
     try {
       const response = await adminAuthAPI.login(values.email, values.password);
-
+      console.log('🔑 로그인 성공:', response);
       // 토큰 저장
       localStorage.setItem("accessToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
@@ -67,8 +67,23 @@ export default function Login() {
       // 관리자 정보 저장 (필요한 경우)
       localStorage.setItem("adminInfo", JSON.stringify(response.admin));
 
+      // 로그인 후 FCM 토큰이 있다면 백엔드에 저장
+      const fcmToken = localStorage.getItem('fcmToken');
+      if (fcmToken) {
+        try {
+          await api.post('/common/notification/fcm/token', {
+            fcmToken: fcmToken,
+            deviceId: navigator.userAgent || 'unknown',
+            deviceType: 'android',
+          });
+          console.log('🔑 로그인 후 FCM 토큰 저장 성공');
+        } catch (error: any) {
+          console.error('❌ 로그인 후 FCM 토큰 저장 실패:', error);
+        }
+      }
+
       // 로그인 성공 시 관리자 대시보드로 이동
-      router.push("/admin");
+      router.push("/admin/approval/funeral");
     } catch (error: any) {
       // 백엔드 메시지 우선
       const errorMessage =

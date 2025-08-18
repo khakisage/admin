@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import {
   Users,
   Coins,
-  FileText,
   Bell,
   Building2,
-  Calendar,
   History,
   Settings,
   UserPlus,
   Store,
   LogOut,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { notificationApiService } from "@/lib/api";
 
 import {
   NavigationMenu,
@@ -26,6 +26,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 const approvalItems = [
@@ -87,9 +88,9 @@ const pointItems = [
 
 const memberItems = [
   {
-    title: "상조회사 유저 목록",
+    title: "상조팀장 유저 목록",
     href: "/admin/members/companies",
-    description: "상조회사 유저 목록을 관리합니다.",
+    description: "상조팀장 유저 목록을 관리합니다.",
     icon: Users,
   },
   {
@@ -111,6 +112,27 @@ const noticeItems = [
 
 export const AdminNavigationMenu = () => {
   const router = useRouter();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  // 읽지 않은 알림 개수 조회
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response =
+          await notificationApiService.getUnreadNotificationCount();
+        console.log("🚀 ~ fetchUnreadCount ~ response:", response);
+        setUnreadCount(response.count || 0);
+      } catch (error) {
+        console.error("읽지 않은 알림 개수 조회 실패:", error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // 30초마다 읽지 않은 알림 개수 업데이트
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     toast.success("로그아웃되었습니다.");
@@ -156,7 +178,7 @@ export const AdminNavigationMenu = () => {
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
-{/* 
+          {/* 
           <NavigationMenuItem>
             <NavigationMenuTrigger>출동/거래내역</NavigationMenuTrigger>
             <NavigationMenuContent>
@@ -209,6 +231,28 @@ export const AdminNavigationMenu = () => {
                 ))}
               </ul>
             </NavigationMenuContent>
+          </NavigationMenuItem>
+
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link
+                href="/admin/notifications"
+                className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="h-4 w-4" />
+                  알림 관리
+                  {unreadCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="ml-1 px-1.5 py-0.5 text-xs"
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </div>
+              </Link>
+            </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>

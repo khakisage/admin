@@ -285,16 +285,19 @@ export const noticeAPI = {
     title,
     content,
     isActive,
+    userType,
   }: {
     id: string;
     title: string;
     content: string;
     isActive: boolean;
+    userType: "manager" | "funeral" | "all";
   }) => {
     const response = await api.patch(`/admin/notice/update/${id}`, {
       title,
       content,
       isVisible: isActive,
+      userType,
     });
     return response.data;
   },
@@ -312,5 +315,89 @@ export const dispatchAPI = {
       `/admin/dispatch/user/dispatch/requests?userId=${userId}&userType=${userType}`
     );
     return response.data;
+  },
+};
+
+// 알림 관련 타입 정의
+export interface NotificationItem {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  data?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetNotificationListParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+}
+
+export interface GetNotificationListResponse {
+  count: number;
+  rows: UnreadNotificationRow[];
+}
+
+export interface GetUnreadNotificationCountResponse {
+  count: number;
+  rows: UnreadNotificationRow[];
+}
+
+interface UnreadNotificationRow {
+  body: string;
+  createdAt: string;
+  date: {
+    amount: number;
+    managerId: string;
+    managerName: string;
+    requestType: string;
+  };
+  isRead: boolean;
+  notificationId: string;
+  notificationType: string;
+  readAt: string | null;
+  receiverType: string;
+  receiverId: string;
+  senderId: string;
+  senderType: string;
+  sentAt: string;
+  title: string;
+  updatedAt: string;
+}
+
+// 알림 API
+export const notificationApiService = {
+  // 알림 목록 조회
+  getNotificationList: async (
+    params: GetNotificationListParams = {}
+  ): Promise<GetNotificationListResponse> => {
+    const response = await api.get("/common/notification/list", {
+      params: {
+        page: params.page || 1,
+        limit: params.limit || 20,
+        type: params.type || undefined,
+      },
+    });
+    return response.data.data;
+  },
+
+  // 읽지 않은 알림 개수 조회
+  getUnreadNotificationCount:
+    async (): Promise<GetUnreadNotificationCountResponse> => {
+      const response = await api.get("/common/notification/badge-count");
+      return response.data.data;
+    },
+
+  // 알림 읽음 처리
+  markAsRead: async (notificationId: string): Promise<void> => {
+    await api.put(`/common/notification/${notificationId}/read`);
+  },
+
+  // 모든 알림 읽음 처리
+  markAllAsRead: async (): Promise<void> => {
+    await api.patch("/common/notification/read-all");
   },
 };

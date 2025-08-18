@@ -36,7 +36,7 @@ export default function CompanyMemberDetailPage({ params }: { params: Promise<{ 
   useEffect(() => {
     if (!id) return;
     fetchMemberDetail(id).then((data) => {
-      console.log("Fetched member data:", data); // Log the data
+      // console.log("Fetched member data:", data); // Log the data
       setMember(data);
       setLoading(false);
     });

@@ -37,29 +37,23 @@ export default function ChargeHistoryPage() {
       try {
         setLoading(true);
         const result = await cashAPI.getAllCashChargeHistory();
-        console.log("🚀 ~ getAllCashChargeHistory ~ result:", result)
-        // managers, funerals 배열을 합쳐서 ChargeHistory[] 형태로 변환
-        const managers = (result.data.managers || []).map((item: any) => ({
-          id: item.id,
-          amount: item.amount,
-          paymentDate: item.paymentDate,
-          memberName: item.memberName,
-          memberType: "manager",
-          company: item.company,
-          paymentMethod: item.paymentMethod,
-          status: item.status,
-        }));
-        const funerals = (result.data.funeralCash || []).map((item: any) => ({
-          id: item.id,
+
+        console.log("🚀 ~ getAllCashChargeHistory ~ result:", result);
+
+        // Process funeralCash array
+        const funeralCash = (result.data.funeralCash || []).map((item: any) => ({
+          id: item.funeralCashHistoryId,
           amount: item.funeralCashAmount,
           paymentDate: item.createdAt,
-          // memberName: item.funeral.funeralName,
+          memberName: item.funeral.funeralName,
           memberType: "funeral",
-          company: item.funeral.funeralName,
-          paymentMethod: item.transactionType,
+          company: "N/A", // Assuming no company field
+          // paymentMethod: item.transactionType,
+          paymentMethod: "캐시 충전",
           status: item.status,
         }));
-        setData([...managers, ...funerals]);
+
+        setData(funeralCash);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -168,7 +162,7 @@ export default function ChargeHistoryPage() {
                       {item.company}
                     </div>
                     <div className="min-w-[120px] text-sm text-muted-foreground">
-                      {item.amount.toLocaleString()}원
+                      {(item.amount?.toLocaleString() || "0")}원
                     </div>
                     <div className="min-w-[150px] text-sm text-muted-foreground">
                       {format(new Date(item.paymentDate), "yyyy년 MM월 dd일 a h시 mm분", { locale: ko })}
