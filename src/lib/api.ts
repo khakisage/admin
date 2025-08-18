@@ -4,6 +4,7 @@ import axios from "axios";
 export const api = axios.create({
   // baseURL: "http://localhost:8000/api",
   baseURL: "https://www.wooricenter.co.kr/api",
+  // baseURL: "https://67796a706d83.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,7 +15,7 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
-    // console.log("🚀 ~ token:", token)
+    console.log("🚀 ~ token:", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -45,7 +46,7 @@ api.interceptors.response.use(
 // Add the new estimate API
 export const estimateAPI = {
   getEstimateRequestList: async (memberId: string) => {
-    // console.log("🚀 ~ getEstimateRequestList: ~ memberId:", memberId)
+    console.log("🚀 ~ getEstimateRequestList: ~ memberId:", memberId);
     const response = await api.get(`/admin/form/list`, {
       params: { funeralId: memberId },
     });
@@ -56,8 +57,8 @@ export const estimateAPI = {
 // 관리자 로그인 API
 export const adminAuthAPI = {
   login: async (email: string, password: string) => {
-    // console.log("🚀 ~ adminAuthAPI ~ login ~ email:", email)
-    // console.log("🚀 ~ adminAuthAPI ~ login ~ password:", password)
+    console.log("🚀 ~ adminAuthAPI ~ login ~ email:", email);
+    console.log("🚀 ~ adminAuthAPI ~ login ~ password:", password);
     const response = await api.post("/admin/auth/login", {
       adminEmail: email,
       adminPassword: password,
@@ -98,9 +99,18 @@ export const approvalAPI = {
     isApproved: boolean,
     rejectReason?: string
   ) => {
-    // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ managerId:", managerId)
-    // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ isApproved:", isApproved)
-    // console.log("🚀 ~ approvalAPI ~ setManagerApproval ~ rejectReason:", rejectReason)
+    console.log(
+      "🚀 ~ approvalAPI ~ setManagerApproval ~ managerId:",
+      managerId
+    );
+    console.log(
+      "🚀 ~ approvalAPI ~ setManagerApproval ~ isApproved:",
+      isApproved
+    );
+    console.log(
+      "🚀 ~ approvalAPI ~ setManagerApproval ~ rejectReason:",
+      rejectReason
+    );
     const response = await api.patch(
       `/admin/manager/requests/approve/${managerId}`,
       {

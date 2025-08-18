@@ -20,6 +20,7 @@ export default function FuneralHallEstimateRequestList({
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
 
+  // 견적 신청 내역 조회
   useEffect(() => {
     estimateAPI
       .getEstimateRequestList(memberId)
@@ -67,14 +68,10 @@ export default function FuneralHallEstimateRequestList({
             className="border rounded p-4 flex justify-between items-center"
           >
             <div className="flex gap-8 items-center flex-1">
-            <div>
-                {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(item.managerFormCreatedAt))}
+              <div className="font-semibold">
+                {item.managerForm.chiefMournerName}
               </div>
-              <div className="font-semibold">상주명: {item.managerForm.chiefMournerName}</div>
-              <div className="font-semibold">홀명: {item.funeralHallName}</div>
-              <div><div className={`px-3 py-1 rounded-full ${statusColors[item.bidStatus] || 'bg-gray-100 text-gray-700'}`}>
-  {bidStatusLabels[item.bidStatus] || 'Unknown Status'}
-</div></div>
+              <div>{item.bidSubmittedAt}</div>
             </div>
             <Dialog
               open={openId === index}

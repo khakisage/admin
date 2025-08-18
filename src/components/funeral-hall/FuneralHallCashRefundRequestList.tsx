@@ -21,15 +21,19 @@ export default function FuneralHallCashRefundRequestList({
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 환불 요청 내역 조회
   useEffect(() => {
-    cashAPI.getRefundRequestByUserId(memberId, "funeral").then((response) => {
-      // console.log("Fetched refund requests:", response.data.refundRequests); // Log the data
-      setList(response.data.refundRequests);
-      setLoading(false);
-    }).catch((error) => {
-      console.error("Error fetching cash refund request list:", error);
-      setLoading(false);
-    });
+    cashAPI
+      .getRefundRequestByUserId(memberId, "funeral")
+      .then((response) => {
+        console.log("Fetched refund requests:", response.data.refundRequests); // Log the data
+        setList(response.data.refundRequests);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching cash refund request list:", error);
+        setLoading(false);
+      });
   }, [memberId, memberType]);
 
   const handleApprove = (id: number) => {
@@ -87,10 +91,14 @@ export default function FuneralHallCashRefundRequestList({
                   </button>
                 </MenubarTrigger>
                 <MenubarContent align="end">
-                  <MenubarItem onClick={() => handleApprove(item.refundRequestId)}>
+                  <MenubarItem
+                    onClick={() => handleApprove(item.refundRequestId)}
+                  >
                     승인
                   </MenubarItem>
-                  <MenubarItem onClick={() => handleReject(item.refundRequestId)}>
+                  <MenubarItem
+                    onClick={() => handleReject(item.refundRequestId)}
+                  >
                     거절
                   </MenubarItem>
                 </MenubarContent>
