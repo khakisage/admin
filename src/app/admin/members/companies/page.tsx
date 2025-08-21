@@ -98,7 +98,7 @@ export default function CompaniesPage() {
     const fetchData = async () => {
       try {
         const result = await userAPI.getManagerList();
-        console.log("🚀 ~ fetchData ~ result:", result)
+        // console.log("🚀 ~ fetchData ~ result:", result)
         setData(result.data.managers); // managers 배열을 설정
       } catch (error) {
         setError(error.message);

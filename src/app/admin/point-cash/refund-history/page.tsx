@@ -76,7 +76,7 @@ export default function RefundHistoryPage() {
     try {
       setLoading(true);
       const result = await cashAPI.getRefundHistory(filterType);
-      console.log("🚀 ~ fetchData ~ result:", result);
+      // console.log("🚀 ~ fetchData ~ result:", result);
 
       const histories = (result.data || []).map((item: any) => ({
         id: item.refundRequestId || item.id,
@@ -91,7 +91,7 @@ export default function RefundHistoryPage() {
       }));
 
       setData(histories);
-      console.log("Mapped data:", histories);
+      // console.log("Mapped data:", histories);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
