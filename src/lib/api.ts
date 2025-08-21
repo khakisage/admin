@@ -4,7 +4,6 @@ import axios from "axios";
 export const api = axios.create({
   // baseURL: "http://localhost:8000/api",
   baseURL: "https://www.wooricenter.co.kr/api",
-  // baseURL: "https://67796a706d83.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
   },
